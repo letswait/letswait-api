@@ -23,7 +23,8 @@
     "@types/passport-local": "^1.0.33",
     "@types/sharp": "^0.22.2",
     "@types/socket.io": "^2.1.2",
-    "@types/twilio": "^0.0.10"
+    "@types/twilio": "^0.0.10",
+    "typescript": "^3.5.3"
   },
   "dependencies": {
     "apn": "^2.2.0",
