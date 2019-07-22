@@ -88,5 +88,3 @@ typings/
 .dynamodb/
 
 *.p8
-
-dist/
