@@ -51,7 +51,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "nodemon",
-    "start": "nodemon ./dist/server.js",
+    "start": "node ./dist/server.js",
     "prod": "npm run build && npm run start"
   }
 }
