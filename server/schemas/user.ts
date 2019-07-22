@@ -100,7 +100,7 @@ UserSchema.pre('save', (next) => {
       this.searchSettings.sexualPreference &&
       this.profile.images.length > 0 &&
       this.profile.food.length > 0 &&
-      this.name &&
+      (this as any).name &&
       this.birth &&
       this.profile.goal
     )
