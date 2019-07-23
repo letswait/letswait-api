@@ -91,7 +91,6 @@ UserSchema.pre('save', (next) => {
     this.searchSettings.ageRange[1] = Math.min(Math.max(22, this.searchSettings.ageRange[1]),100)
   }
   // check if setup is completed
-  console.log('USER PROFILE PRIOR TO SAVING: ', this.registered, this)
   if(!this.registered) {
     const shouldBeRegistered = (
       this.profile &&
@@ -104,7 +103,6 @@ UserSchema.pre('save', (next) => {
       this.birth &&
       this.profile.goal
     )
-    console.log('should register?', shouldBeRegistered)
     if(shouldBeRegistered) {
       this.registered = Date
     }

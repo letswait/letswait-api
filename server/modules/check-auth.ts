@@ -7,8 +7,9 @@ export default function(req: any, res) {
     console.log('found user', user)
     if(user.registered) {
       console.log('user already registered, sharing user profile')
-      delete user.devices
-      res.status(200).send({ accepted: true, user: user })
+      let mutableUser = Object.assign({}, user, { devices: undefined })
+      delete mutableUser.devices
+      res.status(200).send({ accepted: true, user: mutableUser })
     } else {
       console.log('sending to remaining setup Routes')
       res.status(200).send({ accepted: true, remainingSetupRoutes: [
