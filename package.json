@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Let's Wait Dating API",
   "engines": {
-    "node": "12.6.0"
+    "node": "10.16.0"
   },
   "main": "index.js",
   "author": "Saul Garza",
