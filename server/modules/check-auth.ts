@@ -7,7 +7,7 @@ export default function(req: any, res) {
     console.log('found user', user)
     if(user.registered) {
       console.log('user already registered, sharing user profile')
-      let mutableUser = Object.assign({}, user, { devices: undefined })
+      let mutableUser = user.toObject()
       delete mutableUser.devices
       res.status(200).send({ accepted: true, user: mutableUser })
     } else {

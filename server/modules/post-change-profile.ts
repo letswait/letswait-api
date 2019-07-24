@@ -42,15 +42,23 @@ export default function (req, res) {
       user.registered = new Date()
     }
     console.log('saving user: ', user)
-    user.updateOne(user, (err, savedUser) => {
+    user.save((err, savedUser) => {
       if(err || !savedUser) {
-        console.log('could not save user')
+        console.log('Could not save user profile changes')
         res.status(500).send()
       } else {
-        console.log('savedUser: ', savedUser)
         res.status(200).send({ accepted: true })
       }
     })
+    // user.updateOne(user, (err, savedUser) => {
+    //   if(err || !savedUser) {
+    //     console.log('could not save user')
+    //     res.status(500).send()
+    //   } else {
+    //     console.log('savedUser: ', savedUser)
+    //     res.status(200).send({ accepted: true })
+    //   }
+    // })
     // user.save((err, savedUser) => {
     //   if(err || !savedUser) res.status(500).send()
     //   res.status(200).send({ accepted: true })
