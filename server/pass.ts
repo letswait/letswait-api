@@ -141,7 +141,7 @@ passport.use(new LocalStrategy({
     }
     console.log(user.devices)
     user.save((err, savedUser) => {
-      if(err) done(err)
+      if(err) return done(err)
       return done(null, savedUser)
     })
   })
