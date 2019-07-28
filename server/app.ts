@@ -116,7 +116,7 @@ import './pass'
 const PORT = (process.env.PORT || 8080)
 // Setup HTTP Connections
 import httpolyglot = require('httpolyglot')
-if(process.env.NODE_ENV === 'production') {
+if(process.env.NODE_ENV !== 'production') {
   const httpsOptions: ServerOptions = {
     // key: fs.readFileSync(`${__dirname}/security/server.key`, 'utf-8'),
     key: fs.readFileSync(`${__dirname}/certificates/server_dev.key`, 'utf-8'),
