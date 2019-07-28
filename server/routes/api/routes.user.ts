@@ -41,7 +41,7 @@ api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRe
       res.status(200).send({ accepted: true, user: req.user})
     } else {
       console.log(chalk.yellow(`User not registered, Sending Setup Routes...`))
-      res.redirect(200, `letswaitdating://login?routes=${JSON.stringify([
+      res.redirect(302, `letswaitdating://login?routes=${JSON.stringify([
         ...(birth ? [] : ['/setup/birthdate']),
         ...(name ? [] : ['/setup/name']),
         ...(profile && profile.gender ? [] : ['/setup/gender']),
