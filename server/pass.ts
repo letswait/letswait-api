@@ -27,7 +27,7 @@ passport.deserializeUser(function(id, done) {
 passport.use(new FacebookStrategy({
   clientID: CONFIG.facebookId,
   clientSecret: CONFIG.facebookSecret,
-  callbackURL: 'https://lets-wait-dating.herokuapp.com/api/user/facebook-auth/callback',
+  callbackURL: 'https://lets-wait-staging.herokuapp.com/api/user/facebook-auth/callback',
   profileFields: ['id', 'first_name', 'gender', 'age_range', 'birthday', 'significant_other'],
   passReqToCallback: true,
 },
