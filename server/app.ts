@@ -7,10 +7,54 @@ const app = express()
 // var session = require('express-session')
 import mongoose = require('mongoose');
 
-// Setup HTTP Connections
-import * as http from 'http'
-const server = http.createServer(app)
-const PORT = (process.env.PORT || 8080)
+import fs = require('fs')
+
+const httpsOptions: ServerOptions = {
+  // key: fs.readFileSync(`${__dirname}/security/server.key`, 'utf-8'),
+  key: fs.readFileSync(`${__dirname}/certificates/server_dev.key`, 'utf-8'),
+  // cert: fs.readFileSync(`${__dirname}/security/server.cert`, 'utf-8'),
+  cert: fs.readFileSync(`${__dirname}/certificates/server_dev.crt`, 'utf-8'),
+  // requestCert: false,
+  // rejectUnauthorized: false,
+}
+
+app.use(function(req, res, next) {
+  // if (!req.secure && process.env.NODE_ENV !== 'production') {
+  //   console.log(chalk.magenta('Redirecting unsecured client to HTTPS'))
+  //   res.redirect(301, 'https://' + req.hostname + ':port' + req.originalUrl);
+  // } else {
+    console.log(chalk.greenBright('Established Secure Connection with Client'))
+    return next();
+  // }
+});
+// import https = require('https') 
+// import http = require('http') 
+// https.createServer(httpsOptions, app).listen(443, () => {
+//   console.log(chalk.yellow('Initializing SSL...'))
+// })
+// http.createServer(app).listen(80, () => {
+//   console.log(chalk.yellow('Initializing TLS...'))
+// })
+
+// const https = require('https')
+// const pem = require('pem')
+// const express = require('express')
+// const app = express()
+
+// let server
+
+// pem.createCertificate({ days: 1, selfSigned: true }, function (err, keys) {
+//   if (err) {
+//     throw err
+//   }
+
+//   app.get('/', function (req, res) {
+//     res.send('o hai!')
+//   })
+
+//   server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(443)
+// })
+
 
 // Miscellaneous
 import chalk from 'chalk'
@@ -60,25 +104,34 @@ app.use(cookieSession({
 app
   .use(passport.initialize())
   .use(passport.session())
-  .listen(PORT, () => {
-    console.log(chalk.green(`Starting Server on Port: ${PORT}`))
-  })
+
+// app.listen(PORT, () => {
+//   console.log(chalk.green(`Starting Server on Port: ${PORT}`))
+// })
 
 import './pass'
 
 // Setup Socket.io
-const io = require('socket.io')(server)
-  .use((socket, next) => {
-    console.log('attempt being made to connect?')
-    // cookieSession(socket.request, {} as any, next)
-  })
-  .on('connection', (socket) => {
-    const userId = socket.request.session.passport.user
-    console.log(`user: ${userId} has joined!`)
-  })
+// const io = require('socket.io')(server)
+//   .use((socket, next) => {
+//     console.log('attempt being made to connect?')
+//     // cookieSession(socket.request, {} as any, next)
+//   })
+//   .on('connection', (socket) => {
+//     const userId = socket.request.session.passport.user
+//     console.log(`user: ${userId} has joined!`)
+//   })
+
+const PORT = (process.env.PORT || 8080)
+// Setup HTTP Connections
+import httpolyglot = require('httpolyglot')
+httpolyglot.createServer(httpsOptions, app).listen(8080, () => {
+  console.log(chalk.yellow('Initializing HTTPS Server...'))
+})
 
 // Routes
 import api_routes from './routes/api/'
+import { ServerOptions } from 'https';
 app.use('/api/user', api_routes.user)
 app.use('/api/upload', api_routes.upload)
 app.use("/api/profile", api_routes.profile)
@@ -87,5 +140,9 @@ app.use('/api/dates', api_routes.date)
 app.use('/api/feed', api_routes.feed)
 app.use('/api', api_routes.api)
 /// app.use("/api/admin", api_routes.admin)
+
+// server.listen(PORT, () => {
+//   console.log(chalk.yellow('Initializing SSL...'))
+// })
 
 export default app

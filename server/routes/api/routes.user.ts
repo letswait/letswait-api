@@ -2,6 +2,8 @@ import express = require('express')
 import passport = require('passport')
 var pass = require('../../pass')
 
+import chalk from 'chalk'
+
 const api = express.Router()
 const options = { session: true }
 
@@ -11,25 +13,52 @@ import moment = require('moment');
 api.post(
   '/auth',
   passport.authenticate('local', options),
-  SMS.send
+  SMS.send,
 )
-api.post('/code', pass.ensureTempAuth, SMS.receive)
+api.post('/code', pass.auth, SMS.receive)
 
-api.get('/facebook-auth', passport.authenticate('facebook', options))
+api.get('/facebook-auth', (req, res) => {
+  passport.authenticate(
+    'facebook',
+    {
+      ...options,
+      state: req.query.uuid
+    },
+  )(req, res)
+})
 api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRedirect: '/' }),
   function(req, res) {
-    if(!!req.user.registered) {
-      res.redirect('/app')
+    const {
+      registered,
+      birth,
+      name,
+      profile,
+      searchSettings,
+    } = req.user
+    console.log(chalk.green('✓ Facebook Passport Login ✓'))
+    if(registered) {
+      console.log(chalk.yellow(`User Registered: Sending to app...`))
+      res.status(200).send({ accepted: true, user: req.user})
     } else {
-      res.json({
-        gender: !!req.user.profile.gender,
-        sexualPreference: !!req.user.searchSettings.sexualPreference,
-        photos: req.user.profile.images.length > 0,
-        food: req.user.profile.food > 0,
-        name: !!req.user.name,
-        birth: !!req.user.birth,
-        goal: !!req.user.profile.goal,
-      }).send()
+      console.log(chalk.yellow(`User not registered, Sending Setup Routes...`))
+      res.redirect(200, `letswaitdating://login?routes=${JSON.stringify([
+        ...(birth ? [] : ['/setup/birthdate']),
+        ...(name ? [] : ['/setup/name']),
+        ...(profile && profile.gender ? [] : ['/setup/gender']),
+        ...(searchSettings && searchSettings.sexualPreference ? [] : ['/setup/sexual-preference']),
+        ...(profile && profile.images.length ? [] : ['/setup/photo-upload']),
+        ...(profile && profile.food.length ? [] : ['/setup/food-interests']),
+        ...(profile && profile.goal ? [] : ['/setup/goals']),
+      ])}`)
+      // res.status(200).send({ accepted: true, remainingSetupRoutes: [
+      //   ...(birth ? [] : ['/setup/birthdate']),
+      //   ...(name ? [] : ['/setup/name']),
+      //   ...(profile && profile.gender ? [] : ['/setup/gender']),
+      //   ...(searchSettings && searchSettings.sexualPreference ? [] : ['/setup/sexual-preference']),
+      //   ...(profile && profile.images.length ? [] : ['/setup/photo-upload']),
+      //   ...(profile && profile.food.length ? [] : ['/setup/food-interests']),
+      //   ...(profile && profile.goal ? [] : ['/setup/goals']),
+      // ]})
     }
   }
 )
@@ -42,8 +71,9 @@ api.get('/check-auth', pass.ensureAuthenticated, checkAuth)
 import refreshToken from '../../modules/refreshToken'
 api.get('/check-auth/error', pass.ensureAuthenticated, refreshToken)
 
-api.get('/logout', pass.ensureAuthenticated, (req, res) => {
+api.get('/logout', pass.auth, (req, res) => {
   req.logout()
+  res.redirect('/')
 })
 
 import postToken from '../../modules/user-post-sns-token'

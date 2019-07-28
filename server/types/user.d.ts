@@ -42,6 +42,8 @@ export interface IUser {
   feed?: mongoose.Schema.Types.ObjectId[]
   swipeFitness?: number
   actions?: ObjectOf<IUserAction[]> // [ id: Action[] ]
+  isBot?: boolean
+  botBehavior?: Map<string, boolean>
 }
 
 export enum UserDeviceOS {

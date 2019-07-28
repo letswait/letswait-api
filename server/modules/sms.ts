@@ -4,11 +4,13 @@ import { User } from '../schemas'
 import { IUserDevice } from 'types/user';
 import { IUserModel } from 'schemas/user';
 
+import chalk from 'chalk'
 
 export default {
   send: (req: any, res: any) => {
-    console.log('sending sms code')
     const { sms, devices }: { sms: string, devices: Map<string, IUserDevice>} = req.user
+    console.log(chalk.yellow(`Receiving SMS Number: ${sms}...`))
+    // Get Device
     const {
       activeCode,
       codeValid,
@@ -16,14 +18,14 @@ export default {
       refreshToken,
     } = req.user.devices.get(req.headers.uuid)
     if(sms && activeCode && !codeValid) {
-      console.log('should send sms code')
+      // Create Twilio Instance
       const client = twilio(config.twilioSID, config.twilioAuth)
       client.messages.create({
         body: `Your Let's Wait verification code is ${activeCode}`,
         to: sms,
         from: config.twilioNumbers[0],
       }).then((message: any) => {
-        console.log('sent twilio message to ', sms)
+        console.log(chalk.green('✓ Sent SMS Code to client ✓'))
         res.status('200').send({
           accepted: true,
           redirect: '/setup/code',
@@ -32,28 +34,31 @@ export default {
         })
       })
     } else {
-      res.status('500').send({ accepted: true, redirect: '/' })
+      res.status('500').redirect('/setup/sms')
     }
   },
   receive: (req: any, res: any) => {
-    console.log('receiving sms code', req.body.code)
-    console.log(req, req.user)
+    console.log(chalk.yellow(`Receiving SMS Code: ${req.body.code}...`))
     try {
       if(!req.user || (req.user && req.user.sms !== req.body.sms)) throw 'incorrect sms'
       const device = req.user.devices.get(req.headers.uuid)
       if(device) {
         const activeCode = device.activeCode
         if(activeCode === req.body.code) {
+          console.log(chalk.green('✓ SMS Code Valid... ✓'))
           const target = {
             [`devices.${req.headers.uuid}.codeValid`]: true,
             [`devices.${req.headers.uuid}.lastLogin`]: new Date(),
           }
           User.findByIdAndUpdate(req.user._id, { $set: target }, (err, savedUser) => {
-            if(err) throw 'couldnt log in natively'
+            if(err) throw 'Couldn\'t Log In'
             if(savedUser) {
+              console.log(chalk.green('✓ Saved User ✓'))
               if(savedUser.registered) {
+                console.log(chalk.yellow(`User Registered: Sending to app...`))
                 res.status('200').send({ accepted: true, user: savedUser})
               } else {
+                console.log(chalk.yellow(`User not registered, Sending Setup Routes...`))
                 res.status('200').send({ accepted: true, remainingSetupRoutes: [
                   ...(savedUser.birth ? [] : ['/setup/birthdate']),
                   ...(savedUser.name ? [] : ['/setup/name']),
@@ -67,13 +72,13 @@ export default {
             }
           })
         } else {
-          throw 'incorrect code'
+          throw 'Incorrect SMS Code'
         }
       } else {
-        throw 'uuid unkown'
+        throw 'Unknown UUID'
       }
     } catch(e) {
-      console.log('received code error: ', e)
+      e && console.log(chalk.red(`ERROR: ${e}`))
       res.status('500').send()
     }
   }

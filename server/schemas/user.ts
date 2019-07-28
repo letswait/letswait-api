@@ -24,7 +24,7 @@ export let UserSchema = new Schema({
   smsVerified: Boolean,
   created: { type: Date, default: Date.now },
   registered: Date,
-  devices: { type: Map, of: {
+  devices: {type: Map, of: {
     activeCode: String,
     lastLogin: Date,
     codeValid: Boolean,
@@ -33,6 +33,9 @@ export let UserSchema = new Schema({
     refreshToken: String,
     token: { type: String, default: '' },
     os: { type: String, enum: ['ios','android','other'], default: 'other' },
+  },
+  validate: function(map) {
+    return true
   }},
   tokens: { type: Number, default: 3 },
   matches: [ Schema.Types.ObjectId ],
@@ -85,30 +88,30 @@ export let UserSchema = new Schema({
   }},
 })
 
-UserSchema.pre('save', (next) => {
-  if(this.searchSettings && this.searchSettings.ageRange.length) {
-    this.searchSettings.ageRange[0] = Math.min(Math.max(18, this.searchSettings.ageRange[0]),100)
-    this.searchSettings.ageRange[1] = Math.min(Math.max(22, this.searchSettings.ageRange[1]),100)
-  }
-  // check if setup is completed
-  if(!this.registered) {
-    const shouldBeRegistered = (
-      this.profile &&
-      this.searchSettings &&
-      this.profile.gender &&
-      this.searchSettings.sexualPreference &&
-      this.profile.images.length > 0 &&
-      this.profile.food.length > 0 &&
-      (this as any).name &&
-      this.birth &&
-      this.profile.goal
-    )
-    if(shouldBeRegistered) {
-      this.registered = Date
-    }
-  } 
-  next()
-})
+// UserSchema.pre('save', (next) => {
+//   if(this.searchSettings && this.searchSettings.ageRange.length) {
+//     this.searchSettings.ageRange[0] = Math.min(Math.max(18, this.searchSettings.ageRange[0]),100)
+//     this.searchSettings.ageRange[1] = Math.min(Math.max(22, this.searchSettings.ageRange[1]),100)
+//   }
+//   // check if setup is completed
+//   if(!this.registered) {
+//     const shouldBeRegistered = (
+//       this.profile &&
+//       this.searchSettings &&
+//       this.profile.gender &&
+//       this.searchSettings.sexualPreference &&
+//       this.profile.images.length > 0 &&
+//       this.profile.food.length > 0 &&
+//       (this as any).name &&
+//       this.birth &&
+//       this.profile.goal
+//     )
+//     if(shouldBeRegistered) {
+//       this.registered = Date
+//     }
+//   } 
+//   next()
+// })
 
 // UserSchema.methods.foobar = (
 //   cb: (error: any, message: string) => any

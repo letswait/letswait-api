@@ -14,7 +14,11 @@ console.log(chalk.green(chalk.bgBlack('┆                                      
 console.log(chalk.green(chalk.bgBlack('╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄╯')))
 
 console.log(chalk.yellow('Connecting to MongoDB...'))
-mongoose.connect(config.mongo, { useNewUrlParser: true }, (err: any) => {
+mongoose.connect(config.mongo, {
+  useNewUrlParser: true,
+  useFindAndModify: false,
+  useCreateIndex: true,
+}, (err: any) => {
   if(err) {
     console.log(chalk.red('There was an Error Connecting to the Database! :('))
   } else {
