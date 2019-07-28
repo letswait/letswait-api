@@ -125,11 +125,11 @@ if(process.env.NODE_ENV !== 'production') {
     // requestCert: false,
     // rejectUnauthorized: false,
   }
-  httpolyglot.createServer(httpsOptions, app).listen(8080, () => {
+  httpolyglot.createServer(httpsOptions, app).listen(PORT, () => {
     console.log(chalk.yellow('Initializing HTTPS Server...'))
   })
 } else {
-  app.listen(8080, () => {
+  app.listen(PORT, () => {
     console.log(chalk.yellow('Initializing Production HTTPS Server...'))
   })
 }
