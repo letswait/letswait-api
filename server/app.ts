@@ -9,15 +9,6 @@ import mongoose = require('mongoose');
 
 import fs = require('fs')
 
-const httpsOptions: ServerOptions = {
-  // key: fs.readFileSync(`${__dirname}/security/server.key`, 'utf-8'),
-  key: fs.readFileSync(`${__dirname}/certificates/server_dev.key`, 'utf-8'),
-  // cert: fs.readFileSync(`${__dirname}/security/server.cert`, 'utf-8'),
-  cert: fs.readFileSync(`${__dirname}/certificates/server_dev.crt`, 'utf-8'),
-  // requestCert: false,
-  // rejectUnauthorized: false,
-}
-
 app.use(function(req, res, next) {
   // if (!req.secure && process.env.NODE_ENV !== 'production') {
   //   console.log(chalk.magenta('Redirecting unsecured client to HTTPS'))
@@ -125,9 +116,23 @@ import './pass'
 const PORT = (process.env.PORT || 8080)
 // Setup HTTP Connections
 import httpolyglot = require('httpolyglot')
-httpolyglot.createServer(httpsOptions, app).listen(8080, () => {
-  console.log(chalk.yellow('Initializing HTTPS Server...'))
-})
+if(process.env.NODE_ENV === 'production') {
+  const httpsOptions: ServerOptions = {
+    // key: fs.readFileSync(`${__dirname}/security/server.key`, 'utf-8'),
+    key: fs.readFileSync(`${__dirname}/certificates/server_dev.key`, 'utf-8'),
+    // cert: fs.readFileSync(`${__dirname}/security/server.cert`, 'utf-8'),
+    cert: fs.readFileSync(`${__dirname}/certificates/server_dev.crt`, 'utf-8'),
+    // requestCert: false,
+    // rejectUnauthorized: false,
+  }
+  httpolyglot.createServer(httpsOptions, app).listen(8080, () => {
+    console.log(chalk.yellow('Initializing HTTPS Server...'))
+  })
+} else {
+  app.listen(8080, () => {
+    console.log(chalk.yellow('Initializing Production HTTPS Server...'))
+  })
+}
 
 // Routes
 import api_routes from './routes/api/'
