@@ -1,7 +1,7 @@
 import { User } from '../schemas'
 import crypto = require('crypto')
 import moment = require('moment')
-import sidewalk from 'library/sidewalk'
+import sidewalk from '../library/sidewalk'
 
 export default function(req, res) {
   User.findById(req.user._id, (err, user) => {
