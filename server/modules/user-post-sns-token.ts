@@ -1,5 +1,5 @@
 import { User } from '../schemas'
-import sidewalk from 'Library/sidewalk';
+import sidewalk from 'library/sidewalk';
 
 export default function(req, res) {
   User.findById(req.user._id, (err, user) => {

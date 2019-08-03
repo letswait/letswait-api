@@ -1,6 +1,6 @@
 import { User } from '../schemas'
 import { IUserModel } from 'schemas/user'
-import sidewalk from 'Library/sidewalk'
+import sidewalk from 'library/sidewalk'
 
 export default function (req, res) {
   sidewalk.warning('Changing User Profile')

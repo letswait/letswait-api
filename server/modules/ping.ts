@@ -1,5 +1,5 @@
 import { Request } from "express"
-import sidewalk from 'Library/sidewalk'
+import sidewalk from 'library/sidewalk'
 
 export default (req: Request, res: any) => {
   sidewalk.emphasize(`Pong! ${req.ip}`)

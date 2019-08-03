@@ -2,7 +2,7 @@ import express = require('express')
 import passport = require('passport')
 var pass = require('../../pass')
 
-import sidewalk from 'Library/sidewalk'
+import sidewalk from 'library/sidewalk'
 
 const api = express.Router()
 const options = { session: true }

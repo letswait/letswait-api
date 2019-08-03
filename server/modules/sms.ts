@@ -4,7 +4,7 @@ import { User } from '../schemas'
 import { IUserDevice } from 'types/user';
 import { IUserModel } from 'schemas/user';
 
-import sidewalk from 'Library/sidewalk'
+import sidewalk from 'library/sidewalk'
 
 export default {
   send: (req: any, res: any) => {

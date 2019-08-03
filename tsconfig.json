@@ -8,13 +8,13 @@
       "outDir": "./dist",
       "baseUrl": "./server",
       "paths": {
-          "@api/*": ["routes/api/*"],
-          "@socket/*": ["routes/sockets/*"],
-          "@library": ["library/*"],
-          "@modules/*": ["modules/*"],
-          "@types/*": ["types/*"],
-          "@schemas/*": ["schemas/*"],
-          "@app/*": ["*"]
+          "Api/*": ["routes/api/*"],
+          "Socket/*": ["routes/sockets/*"],
+          "Library": ["library/*"],
+          "Modules/*": ["modules/*"],
+          "Types/*": ["types/*"],
+          "Schemas/*": ["schemas/*"],
+          "App/*": ["*"]
       }
   },
   "include": [

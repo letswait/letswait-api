@@ -4,7 +4,7 @@ require('module-alias/register')
 
 import chalk from 'chalk'
 import config from './config'
-import sidewalk from './library/sidewalk'
+import sidewalk from 'library/sidewalk'
 
 import * as mongoose from 'mongoose'
 

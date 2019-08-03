@@ -8,7 +8,7 @@ import { genRandomNumbers } from './library/util'
 import { IUserDevice } from 'types/user'
 import crypto = require('crypto')
 import moment = require('moment');
-import sidewalk from 'Library/sidewalk'
+import sidewalk from 'library/sidewalk'
 
 passport.serializeUser(function(user: any, done) {
   console.log('serialize User: ', user)

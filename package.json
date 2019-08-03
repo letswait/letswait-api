@@ -66,12 +66,12 @@
     "prod": "yarn build && yarn start"
   },
   "_moduleAliases": {
-    "@api": "dist/routes/api",
-    "@socket": "dist/routes/sockets",
-    "@library": "dist/library",
-    "@modules": "dist/modules",
-    "@types": "dist/type",
-    "@schemas": "dist/schemas",
-    "@app": "dist"
+    "Api": "dist/routes/api",
+    "Socket": "dist/routes/sockets",
+    "Library": "dist/library",
+    "Modules": "dist/modules",
+    "Types": "dist/type",
+    "Schemas": "dist/schemas",
+    "App": "dist"
   }
 }
