@@ -2,7 +2,7 @@ import express = require('express')
 import passport = require('passport')
 var pass = require('../../pass')
 
-import chalk from 'chalk'
+import sidewalk from 'Library/sidewalk'
 
 const api = express.Router()
 const options = { session: true }
@@ -26,7 +26,7 @@ api.get('/facebook-auth', (req, res) => {
     },
   )(req, res)
 })
-api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRedirect: '/' }),
+api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRedirect: '/' }), 
   function(req, res) {
     const {
       registered,
@@ -35,13 +35,16 @@ api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRe
       profile,
       searchSettings,
     } = req.user
-    console.log(chalk.green('✓ Facebook Passport Login ✓'))
+    console.log('Got User: ', name, birth, registered)
+    console.log('Showing Session: ', req.session)
+    sidewalk.success('Facebook Passport Login')
     if(registered) {
-      console.log(chalk.yellow(`User Registered: Sending to app...`))
-      res.status(200).send({ accepted: true, user: req.user})
+      sidewalk.success(`User Registered: Sending to app...`)
+      res.status(200).send({ accepted: true, user: req.user })
     } else {
-      console.log(chalk.yellow(`User not registered, Sending Setup Routes...`))
-      res.redirect(302, `letswaitdating://login?routes=${JSON.stringify([
+      sidewalk.detour(`User not registered, Sending Setup Routes...`)
+
+      res.redirect(307, `letswaitdating://app?routes=${JSON.stringify([
         ...(birth ? [] : ['/setup/birthdate']),
         ...(name ? [] : ['/setup/name']),
         ...(profile && profile.gender ? [] : ['/setup/gender']),
@@ -50,15 +53,6 @@ api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRe
         ...(profile && profile.food.length ? [] : ['/setup/food-interests']),
         ...(profile && profile.goal ? [] : ['/setup/goals']),
       ])}`)
-      // res.status(200).send({ accepted: true, remainingSetupRoutes: [
-      //   ...(birth ? [] : ['/setup/birthdate']),
-      //   ...(name ? [] : ['/setup/name']),
-      //   ...(profile && profile.gender ? [] : ['/setup/gender']),
-      //   ...(searchSettings && searchSettings.sexualPreference ? [] : ['/setup/sexual-preference']),
-      //   ...(profile && profile.images.length ? [] : ['/setup/photo-upload']),
-      //   ...(profile && profile.food.length ? [] : ['/setup/food-interests']),
-      //   ...(profile && profile.goal ? [] : ['/setup/goals']),
-      // ]})
     }
   }
 )

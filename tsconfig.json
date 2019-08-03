@@ -6,7 +6,16 @@
       "sourceMap": true,
       "target": "es6",
       "outDir": "./dist",
-      "baseUrl": "./server"
+      "baseUrl": "./server",
+      "paths": {
+          "Api/*": ["routes/api/*"],
+          "Socket/*": ["routes/sockets/*"],
+          "Library": ["library/*"],
+          "Modules/*": ["modules/*"],
+          "Types/*": ["types/*"],
+          "Schemas/*": ["schemas/*"],
+          "App/*": ["*"]
+      }
   },
   "include": [
       "server/**/*.ts"

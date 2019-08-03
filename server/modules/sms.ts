@@ -4,12 +4,12 @@ import { User } from '../schemas'
 import { IUserDevice } from 'types/user';
 import { IUserModel } from 'schemas/user';
 
-import chalk from 'chalk'
+import sidewalk from 'Library/sidewalk'
 
 export default {
   send: (req: any, res: any) => {
     const { sms, devices }: { sms: string, devices: Map<string, IUserDevice>} = req.user
-    console.log(chalk.yellow(`Receiving SMS Number: ${sms}...`))
+    sidewalk.warning(`Receiving SMS Number: ${sms}`)
     // Get Device
     const {
       activeCode,
@@ -25,7 +25,7 @@ export default {
         to: sms,
         from: config.twilioNumbers[0],
       }).then((message: any) => {
-        console.log(chalk.green('✓ Sent SMS Code to client ✓'))
+        sidewalk.success('Sent SMS Code to client')
         res.status('200').send({
           accepted: true,
           redirect: '/setup/code',
@@ -38,14 +38,14 @@ export default {
     }
   },
   receive: (req: any, res: any) => {
-    console.log(chalk.yellow(`Receiving SMS Code: ${req.body.code}...`))
+    sidewalk.warning(`Receiving SMS Code: ${req.body.code}`)
     try {
       if(!req.user || (req.user && req.user.sms !== req.body.sms)) throw 'incorrect sms'
       const device = req.user.devices.get(req.headers.uuid)
       if(device) {
         const activeCode = device.activeCode
         if(activeCode === req.body.code) {
-          console.log(chalk.green('✓ SMS Code Valid... ✓'))
+          sidewalk.success('SMS Code Valid')
           const target = {
             [`devices.${req.headers.uuid}.codeValid`]: true,
             [`devices.${req.headers.uuid}.lastLogin`]: new Date(),
@@ -53,12 +53,12 @@ export default {
           User.findByIdAndUpdate(req.user._id, { $set: target }, (err, savedUser) => {
             if(err) throw 'Couldn\'t Log In'
             if(savedUser) {
-              console.log(chalk.green('✓ Saved User ✓'))
+              sidewalk.success('Saved User')
               if(savedUser.registered) {
-                console.log(chalk.yellow(`User Registered: Sending to app...`))
+                sidewalk.warning(`User Registered: Sending to app`)
                 res.status('200').send({ accepted: true, user: savedUser})
               } else {
-                console.log(chalk.yellow(`User not registered, Sending Setup Routes...`))
+                sidewalk.warning(`User not registered, Sending Setup Routes`)
                 res.status('200').send({ accepted: true, remainingSetupRoutes: [
                   ...(savedUser.birth ? [] : ['/setup/birthdate']),
                   ...(savedUser.name ? [] : ['/setup/name']),
@@ -78,7 +78,7 @@ export default {
         throw 'Unknown UUID'
       }
     } catch(e) {
-      e && console.log(chalk.red(`ERROR: ${e}`))
+      e && sidewalk.error(e, true)
       res.status('500').send()
     }
   }

@@ -1,12 +1,12 @@
 import { User } from '../schemas'
 import crypto = require('crypto')
 import moment = require('moment')
+import sidewalk from 'Library/sidewalk'
 
 export default function(req, res) {
-  console.log('refreshing access token?')
   User.findById(req.user._id, (err, user) => {
     if(err || !user) res.redirect && res.redirect('/')
-    console.log('refreshing access token')
+    sidewalk.warning('Refreshing access token')
     const accessToken = crypto.randomBytes(18).toString('hex')
     const expiresOn = moment().add(2, 'hours').toDate()
     user.devices.set(req.headers.uuid, {

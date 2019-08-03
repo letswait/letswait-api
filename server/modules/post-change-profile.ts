@@ -1,13 +1,13 @@
 import { User } from '../schemas'
-import { IUserModel } from 'schemas/user';
+import { IUserModel } from 'schemas/user'
+import sidewalk from 'Library/sidewalk'
 
 export default function (req, res) {
-  console.log('asked to change user profile')
+  sidewalk.warning('Changing User Profile')
   User.findById(req.user._id, (err, user: IUserModel) => {
     if(err || !user) res.status(500).send()
-    console.log('found user', user)
+    sidewalk.success('found user', user)
     const changes = req.body
-    console.log('here are the changes: ', req.body, changes)
     user.profile.gender = changes.gender || user.profile.gender
     user.searchSettings.sexualPreference = ((): 'male' | 'female' | 'everyone' => {
       if(changes.sexualPreference) {
@@ -41,27 +41,14 @@ export default function (req, res) {
     ) {
       user.registered = new Date()
     }
-    console.log('saving user: ', user)
     user.save((err, savedUser) => {
       if(err || !savedUser) {
-        console.log('Could not save user profile changes')
+        sidewalk.error('Could not save user profile changes')
         res.status(500).send()
       } else {
+        sidewalk.success('Saved User Changes')
         res.status(200).send({ accepted: true })
       }
     })
-    // user.updateOne(user, (err, savedUser) => {
-    //   if(err || !savedUser) {
-    //     console.log('could not save user')
-    //     res.status(500).send()
-    //   } else {
-    //     console.log('savedUser: ', savedUser)
-    //     res.status(200).send({ accepted: true })
-    //   }
-    // })
-    // user.save((err, savedUser) => {
-    //   if(err || !savedUser) res.status(500).send()
-    //   res.status(200).send({ accepted: true })
-    // })
   })
 }

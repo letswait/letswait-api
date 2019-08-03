@@ -8,13 +8,15 @@ import { genRandomNumbers } from './library/util'
 import { IUserDevice } from 'types/user'
 import crypto = require('crypto')
 import moment = require('moment');
-import chalk from 'chalk'
+import sidewalk from 'Library/sidewalk'
 
 passport.serializeUser(function(user: any, done) {
-  return done(null, user.id)
+  console.log('serialize User: ', user)
+  return done(null, user._id)
 });
  
 passport.deserializeUser(function(id, done) {
+  console.log('deserialize User: ', id)
   User.findById(id, function (err, user) {
     if(err) return done(err)
     return done(null, user);
@@ -27,13 +29,12 @@ passport.deserializeUser(function(id, done) {
 passport.use(new FacebookStrategy({
   clientID: CONFIG.facebookId,
   clientSecret: CONFIG.facebookSecret,
-  callbackURL: 'https://lets-wait-staging.herokuapp.com/api/user/facebook-auth/callback',
+  callbackURL: CONFIG.facebookCallback,
   profileFields: ['id', 'first_name', 'gender', 'age_range', 'birthday', 'significant_other'],
   passReqToCallback: true,
 },
 (req: any, accessToken, refreshToken, profile: any, done) => {
   // Check if there is a uuid supplied
-  // console.log('GOT REQUEST FOR FACEBOOK LOGIN: ', req.query.state)
   const uuid = req.query.state
   if(!uuid) return done('There was no uuid supplied')
   // check if is old enough to use the app
@@ -105,13 +106,13 @@ passport.use(new FacebookStrategy({
         searchSettings: {},
         actions: {},
       })
-      console.log(chalk.yellow('Creating FB User...'))
+      sidewalk.warning('Creating FB User...')
       User.create(user, (err, savedUser) => {
         if(err || !savedUser) {
-          console.log(chalk.red('ERROR: Could not create FB User'))
+          sidewalk.error('ERROR: Could not create FB User')
           return done(err)
         }
-        console.log(chalk.green('Created FB User'))
+        sidewalk.success('Created FB User')
         return done(null, savedUser)
       })
     } else {
@@ -129,19 +130,14 @@ passport.use(new FacebookStrategy({
           mutableDeviceValues,
         )) 
       }
-      console.log(chalk.yellow('Saving FB User Login...'))
+      sidewalk.warning('Saving FB User Login...')
       const userObject = user.toObject()
-      console.log(userObject)
       user.save((err, savedUser) => {
-      // User.findOneAndUpdate({ _id: user._id },
-        // { $set: { devices: userObject.devices }},
-        // { upsert: true },
-        // (err, savedUser) => {
         if(err || !savedUser) {
-          console.log(chalk.red('ERROR: Could not save FB User'))
+          sidewalk.error('ERROR: Could not save FB User')
           return done(err)
         }
-        console.log(chalk.green('Saved User'))
+        sidewalk.success('Saved User')
         return done(null, savedUser)
       })
     }
@@ -218,13 +214,13 @@ passport.use(new LocalStrategy({
         actions: {},
         profile: {},
       })
-      console.log(chalk.yellow('Creating Native User...'))
+      sidewalk.warning('Creating Native User...')
       User.create(user, (err, savedUser) => {
         if(err || !savedUser) {
-          console.log(chalk.red('ERROR: Could not create Native User'))
+          sidewalk.error('ERROR: Could not create Native User')
           return done(err)
         }
-        console.log(chalk.green('Created Native User'))
+        sidewalk.success('Created Native User')
         return done(null, savedUser)
       })
     } else {
@@ -242,13 +238,13 @@ passport.use(new LocalStrategy({
           mutableDeviceValues,
         )) 
       }
-      console.log(chalk.yellow('Saving Native User...'))
+      sidewalk.warning('Saving Native User...')
       user.save((err, savedUser) => {
         if(err) {
-          console.log(chalk.red('ERROR: Could not save Native User'))
+          sidewalk.error('ERROR: Could not save Native User')
           return done(err)
         }
-        console.log(chalk.green('Saved Native User'))
+        sidewalk.success('Saved Native User')
         return done(null, savedUser)
       })
     }
@@ -256,20 +252,22 @@ passport.use(new LocalStrategy({
 }))
 
 export function auth(req, res, next: () => any) {
-  console.log(chalk.yellow('Authenticating Passport...'))
+  sidewalk.warning('Authenticating Passport')
+  console.log(req.isAuthenticated(), req.session)
   if(req.isAuthenticated()) {
-    console.log(chalk.green('✓ Passport Authentication Successful ✓'))
+    sidewalk.success('Passport Authentication Successful')
     return next()
   } else {
+    sidewalk.error('Could not Authenticate Passport')
     res.status(500).redirect('/')
   }
 }
 
 export function ensureAuthenticated(req: any, res: any, next: () => any) {
   try {
-    console.log(chalk.yellow('Authenticating Passport...'))
+    sidewalk.warning('Authenticating Passport')
     if(req.isAuthenticated() && req.user) {
-      console.log(chalk.green('✓ Passport Authentication Successful ✓'))
+      sidewalk.success('Passport Authentication Successful')
       /**
        * @todo check if this block does anything, might be able to prune it
        */
@@ -286,21 +284,21 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
 
     // This Function will check system auth
     function passportAllEnsure() {
-      console.log(chalk.yellow('Ensuring Authentication...'))
+      sidewalk.warning('Ensuring Authentication...')
       const device = req.user.devices.get(req.headers.uuid)
       if(device) {
         // Check if Auth Token valid
         const expiresOn = moment(device.expiresOn)
         const expired = expiresOn.isValid() ? expiresOn.isSameOrBefore(moment()) : true
         if(!expired) {
-          console.log(chalk.green('✓ Token Valid, User Authenticated! ✓'))
+          sidewalk.success('✓ Token Valid, User Authenticated! ✓')
           return next()
         } else if(device.refreshToken) {
           if(req.headers.refreshToken) {
-            console.log(chalk.green('✓ Access Token Requested, Generating... ✓'))
+            sidewalk.success('✓ Access Token Requested, Generating... ✓')
             return next()
           } else {
-            console.log(chalk.yellow('Token Expired, Requesting Refresh Token...'))
+            sidewalk.warning('Token Expired, Requesting Refresh Token...')
             res.status(200).send({ accepted: false, requestRefreshToken: true})
           }
         } else {
@@ -311,7 +309,7 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
       }
     }
   } catch(e) {
-    e && console.log(chalk.red(`ERROR: ${e}`))
+    e && sidewalk.error(`ERROR: ${e}`)
     res.redirect('/')
   }
 }

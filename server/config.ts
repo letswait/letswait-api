@@ -21,15 +21,18 @@ const EMAIL_REGEX = new RegExp('/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@
 const PHONE_REGEX = new RegExp('/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/', 'im')
 const ESCAPE_REGEX = (s: any) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
-// if (process.env.NODE_ENV == "development") {
-console.log(chalk.green('Development Environment Running!'))
+let FB_CALLBACK_URL = 'https://lets-wait-staging.herokuapp.com/api/user/facebook-auth/callback'
+
+if (process.env.NODE_ENV !== "production") {
+  FB_CALLBACK_URL = 'https://letswait.ngrok.io/api/user/facebook-auth/callback'
+}
+
 MONGO_URL       = 'mongodb://admin:passw0rd@ds157735.mlab.com:57735/letswait-development'
 AWS_BUCKET_NAME = 'letswait-development'
 CLOUDFRONT_URL  = 'https://d1859sbnlrif6h.cloudfront.net'
 
 /*}
 else {
-  console.log(chalk.green('Production Environment Running!'))
   MONGO_URL       = 'mongodb://admin:password@ds157735.mlab.com:57735/letswait-production'
   AWS_BUCKET_NAME = 'letswait-production'
   //TWILIO_SID      = "ACa9562c179b4a5590afadc04d15e9a722"
@@ -51,5 +54,6 @@ export default {
   cloudfrontUrl: CLOUDFRONT_URL,
   facebookId: FB_ID,
   facebookSecret: FB_SECRET,
+  facebookCallback: FB_CALLBACK_URL,
   apnAuthKey: '-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgzWr8gngZ1C8B+s7S\nfIpKV41DmYrCZI94Lq5Ltdpsfw+gCgYIKoZIzj0DAQehRANCAATuV7qV+fqbR9PE\neMBD0Lm4z9o1AXGAix9ExnpsY9Gn04Up3ZEOXkjAseIggv+iwWdw5bfSvzlwRnf8\nMkomCRYu\n-----END PRIVATE KEY-----',
 }
