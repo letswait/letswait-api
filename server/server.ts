@@ -1,6 +1,6 @@
 'use strict'
 
-import 'module-alias/register'
+require('module-alias/register')
 
 import chalk from 'chalk'
 import config from './config'
