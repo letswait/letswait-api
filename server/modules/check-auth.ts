@@ -1,5 +1,5 @@
 import { User } from '../schemas'
-import sidewalk from 'library/sidewalk'
+import sidewalk from '@library/sidewalk'
 
 export default function(req: any, res) {
   sidewalk.warning(`Checking user authentication: ${req.user_id}`)
