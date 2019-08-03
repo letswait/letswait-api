@@ -1,7 +1,7 @@
 'use strict'
 import path = require('path')
 import fs = require('fs')
-import sidewalk from './library/sidewalk'
+import sidewalk from 'library/sidewalk'
 
 // Setup Express
 import express = require('express')

@@ -62,7 +62,7 @@
     "manhole": "NODE_ENV=development && nodemon --config manhole.nodemon.json",
     "start": "NODE_ENV=production && node ./dist/server.js",
     "start-heroku": "NODE_ENV=production && node --optimize_for_size --max_old_space_size=460 ./dist/server.js",
-    "staging": "yarn build && yarn start-heroku",
+    "staging": "yarn start-heroku",
     "prod": "yarn build && yarn start"
   },
   "_moduleAliases": {
