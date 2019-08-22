@@ -8,6 +8,8 @@ const AWS_REGION = 'us-east-1'
 let AWS_BUCKET_NAME = ''
 let CLOUDFRONT_URL = ''
 
+let GOOGLE_MAPS_KEY = 'AIzaSyCEV8lE5yc6L66wxl_GALzQipQiJXNXyeY'
+
 const	TWILIO_SID      = 'ACd1dfe33afd86a225f16378ea0ca0807f'
 const	TWILIO_AUTH     = '94ab3caf7c4fb2a7697696eed02e67d9'
 const	TWILIO_NUMBERS  = [ '+12029152786' ]
@@ -55,5 +57,6 @@ export default {
   facebookId: FB_ID,
   facebookSecret: FB_SECRET,
   facebookCallback: FB_CALLBACK_URL,
+  googleMapsKey: GOOGLE_MAPS_KEY,
   apnAuthKey: '-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgzWr8gngZ1C8B+s7S\nfIpKV41DmYrCZI94Lq5Ltdpsfw+gCgYIKoZIzj0DAQehRANCAATuV7qV+fqbR9PE\neMBD0Lm4z9o1AXGAix9ExnpsY9Gn04Up3ZEOXkjAseIggv+iwWdw5bfSvzlwRnf8\nMkomCRYu\n-----END PRIVATE KEY-----',
 }

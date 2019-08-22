@@ -4,25 +4,31 @@ import {
   Model,
   model,
   Schema,
+  Types,
 } from 'mongoose'
 
-import { IUser } from '../types/user'
+import { IUserDocument } from '../types/user'
 import { genRandomNumbers } from 'library/util';
+import { IMatchModel } from './match';
 
-export interface IUserModel extends IUser, Document {
+export interface IUser extends IUserDocument {
   setupCompleted: boolean,
   age: number,
+  hasMatchWith(candidateId: string): string | undefined; 
+}
+
+export interface IUserModel extends Model<IUser> {
 }
 
 export let UserSchema = new Schema({
   admin: { type: Boolean, default: false },
   name: String,
-  birth: Date ,
+  birth: Date,
   facebookId: String,
   significantOther: String,
   sms: String,
   smsVerified: Boolean,
-  created: { type: Date, default: Date.now },
+  created: { type: Date, default: Date.now() },
   registered: Date,
   devices: {type: Map, of: {
     activeCode: String,
@@ -33,13 +39,10 @@ export let UserSchema = new Schema({
     refreshToken: String,
     token: { type: String, default: '' },
     os: { type: String, enum: ['ios','android','other'], default: 'other' },
-  },
-  validate: function(map) {
-    return true
   }},
   tokens: { type: Number, default: 3 },
-  matches: [ Schema.Types.ObjectId ],
-  lastLocation: { type: [Number], index: '2dsphere' },
+  matches: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
+  lastLocation: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
   lastLocationDisplayName: String,
   profile: {
     gender: String,
@@ -55,15 +58,20 @@ export let UserSchema = new Schema({
       name: { type: String, default: '' },
       graduationYear: Number,
     },
-    questions: [
-      [String, String]
-    ],
+    questions: { type: Map, of: String },
     height: Number,
   },
   searchSettings: {
     sexualPreference: { type: String, enum: ['male','female', 'everyone'] },
     radius: { type: Number, min: 10, max: 100, default: 50 },
     ageRange: [{ type: Number, min: 18, max: 100 }],
+  },
+  isBot: Boolean,
+  botBehavior: {
+    swipesRight: Boolean,
+    plansAhead: Boolean,
+    enthusiastic: Boolean,
+    punctual: Boolean,
   },
   /**
    * @todo in the future we could store feeds to be recalled later, as long as their not too old
@@ -80,13 +88,11 @@ export let UserSchema = new Schema({
   //   ]
   // }},
   swipeFitness: Number,
-  feed: [Schema.Types.ObjectId],
-  actions: { type: Map, of: { //Key name is UNIX Date string
-    time: { type: Date, default: Date.now },
-    type: { type: String, required: true },
-    user: Schema.Types.ObjectId
-  }},
+  actions: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
 })
+
+UserSchema.set('toObject', { virtuals: true })
+UserSchema.set('toJSON', { virtuals: true })
 
 // UserSchema.pre('save', (next) => {
 //   if(this.searchSettings && this.searchSettings.ageRange.length) {
@@ -113,14 +119,26 @@ export let UserSchema = new Schema({
 //   next()
 // })
 
-// UserSchema.methods.foobar = (
-//   cb: (error: any, message: string) => any
-// ) => {
-//   cb(undefined, 'foobar')
-// }
-
-UserSchema.virtual('age').get(() => {
-  return this.birth ? moment(this.birth).diff(moment(), 'years') : undefined
+UserSchema.virtual('age').get(function() {
+  const birth = moment(this.birth)
+  if(birth.isValid()) return Math.abs(birth.diff(moment(), 'years'))
+  return undefined
 })
 
-export const User: Model<IUserModel> = model<IUserModel>('User', UserSchema)
+UserSchema.methods.hasMatchWith = async function(candidateId: string) {
+  await this.populate({
+    path: 'matches',
+    match: {
+      userProfiles: Types.ObjectId(candidateId)
+    },
+  }, function (err, user) {
+    console.log('Got Populated MAtches', err, user)
+    if(err || !user) return undefined
+    console.log(user.matches)
+    const { matches } = user
+    if(matches && matches[0]) return matches[0].state
+    return undefined
+  })
+}
+
+export const User: IUserModel = model<IUser, IUserModel>('User', UserSchema)

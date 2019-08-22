@@ -2,22 +2,25 @@ import * as mongoose from 'mongoose'
 import { ObjectOf, Point } from '../types'
 
 export interface IMatch {
-  users: ObjectOf<UserMatched> // key/value pair with user _id and UserMatched enum
+  timestamp?: Date,
+  users: Map<string, UserMatched> // key/value pair with user _id and UserMatched enum
   chat: IChat[]
   dates: IDate[]
+  userProfiles: [mongoose.Schema.Types.ObjectId, mongoose.Schema.Types.ObjectId]
   state: MatchState
 }
 
 export interface IChat {
   sentTimestamp: Date
-  readTimestamp: Date
+  readTimestamp?: Date
+  user: string
   message: {
     text: string
-    image?: string
+    images?: string[]
     cloudfront?: string
-    location?: ILocation
+    location?: Point
   }
-  reactions: ObjectOf<Reaction> // key/value pair with user _id and reaction
+  reactions: Map<string, Reaction> // key/value pair with user _id and reaction
 }
 
 export enum Reaction {
@@ -27,29 +30,27 @@ export enum Reaction {
   like = 'like',
 }
 
-export interface ILocation {
-  position: Point
-  label?: string
-  distance?: string
-  address?: string
-  image?: string
-}
+export type MatchState =
+    'queued'
+  | 'timeout'
+  | 'matched'
+  | 'unmatched'
+  | 'blocked'
+  | 'suspend'
+  | 'suspended'
 
-export enum MatchState {
-  enqueue = 'enqueue',
-  queued = 'queued',
-  timeout = 'timeout',
-  matched = 'matched',
-  unmatched ='unmatched'
-}
-
-export enum UserMatched {
-  queued = 'queued',
-  accepted = 'accepted',
-  rejected = 'rejected'
-}
+export type UserMatched =
+    'queued'
+  | 'accepted'
+  | 'rejected'
 
 export interface IDate {
-  location: ILocation,
-  coupon: mongoose.Schema.Types.ObjectId
+  venue: mongoose.Schema.Types.ObjectId
+  logo: string,
+  name: string,
+  location: Point
+  campaignId: string,
+  expiresOn: Date,
+  code: string,
+  consumed: boolean,
 }

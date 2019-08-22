@@ -104,7 +104,6 @@ passport.use(new FacebookStrategy({
           )]
         ]),
         searchSettings: {},
-        actions: {},
       })
       sidewalk.warning('Creating FB User...')
       User.create(user, (err, savedUser) => {
@@ -211,7 +210,6 @@ passport.use(new LocalStrategy({
             mutableDeviceValues,
           )]
         ]),
-        actions: {},
         profile: {},
       })
       sidewalk.warning('Creating Native User...')
@@ -252,8 +250,8 @@ passport.use(new LocalStrategy({
 }))
 
 export function auth(req, res, next: () => any) {
-  sidewalk.warning('Authenticating Passport')
-  console.log(req.isAuthenticated(), req.session)
+  sidewalk.warning(`Authenticating Passport for route: ${JSON.stringify(req.route)}`)
+  // !req.isAuthenticated() && req.login()
   if(req.isAuthenticated()) {
     sidewalk.success('Passport Authentication Successful')
     return next()
@@ -265,7 +263,7 @@ export function auth(req, res, next: () => any) {
 
 export function ensureAuthenticated(req: any, res: any, next: () => any) {
   try {
-    sidewalk.warning('Authenticating Passport')
+    sidewalk.warning(`Authenticating Passport for route: ${req.route}`)
     if(req.isAuthenticated() && req.user) {
       sidewalk.success('Passport Authentication Successful')
       /**

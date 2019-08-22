@@ -1,7 +1,10 @@
 import * as mongoose from 'mongoose'
 import { ObjectOf, Point } from 'types'
 
-export interface IUser {
+import { IAction } from './action'
+import { IMatchModel } from '../schemas/match'
+
+export interface IUserDocument extends mongoose.Document {
   admin: boolean
   name?: string
   birth?: Date
@@ -13,7 +16,7 @@ export interface IUser {
   registered?: Date
   devices?: Map<string, IUserDevice>
   tokens: number
-  matches?: mongoose.Schema.Types.ObjectId
+  matches?: (mongoose.Schema.Types.ObjectId | IMatchModel)[]
   lastLocation?: Point
   lastLocationDisplayName?: string
   profile: {
@@ -30,7 +33,7 @@ export interface IUser {
       name: string,
       graduationYear?: number
     }
-    questions: [string, string][]
+    questions: ObjectOf<string>
     height?: number // Height in Centimeters
   }
   searchSettings: {
@@ -39,11 +42,15 @@ export interface IUser {
     radius: number 
     ageRange: [number, number]
   }
-  feed?: mongoose.Schema.Types.ObjectId[]
   swipeFitness?: number
-  actions?: ObjectOf<IUserAction[]> // [ id: Action[] ]
+  actions?: mongoose.Schema.Types.ObjectId[]
   isBot?: boolean
-  botBehavior?: Map<string, boolean>
+  botBehavior: {
+    swipesRight: boolean, // Matches with users
+    plansAhead: boolean, // Self-sets a date
+    enthusiastic: boolean,
+    punctual: boolean, // Moves location to Venue Coordinates
+  }
 }
 
 export enum UserDeviceOS {

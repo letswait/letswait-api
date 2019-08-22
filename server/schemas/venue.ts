@@ -1,3 +1,4 @@
+import * as moment from 'moment'
 import {
   Document,
   Model,
@@ -5,26 +6,58 @@ import {
   Schema,
 } from 'mongoose'
 
-// import { IVenue } from '../types/venue'
+import { IVenue } from '../types/venue'
 
-// export interface IVenueModel extends IVenue, Document {
-  // profileCompleted: boolean
-// }
+export interface IVenueModel extends IVenue, Document {
+}
 
 export let VenueSchema = new Schema({
-
+  dateDiscovered: { type: Date, default: Date.now() },
+  dateRegistered: Date,
+  members: { type: Map, of: String },
+  googleMapsId: { type: String, required: true },
+  location: {
+    type: { type: String },
+    coordinates: [],
+  },
+  // location: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
+  viewport: {
+    northeast: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
+    southwest: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
+  },
+  food: [String],
+  tags: [String],
+  name: String,
+  restrictMinors: { type: Boolean, default: false },
+  address: { type: String, default: '' },
+  municipality: { type: String, required: true },
+  state: { type: String, default: '', required: true },
+  country: { type: String, required: true },
+  initialLogo: { type: String, required: true },
+  logo: { type: String, default: '' },
+  priceLevel: Number,
+  visitedBy: [{
+    id: { type: Schema.Types.ObjectId, required: true },
+    timestamp: { type: Date, default: Date.now() }
+  }],
+  // This is a code validation where the specified index pairs will always equal
+  codeValidationSecret: {
+    // This sum algorithm describes a number between 2 and 16 (inclusive)
+    sum: { type: Number, default: Math.min(14, Math.floor(Math.random() *  15) + 2)},
+    // Index pair to check, each index pair is 2 indices away from each other, eg: [1, 2, 3, 1, 2, 3]
+    indexPair: { type: Number, default: Math.min(3, Math.floor(Math.random() * 4)) },
+  },
+  campaigns: [{
+    label: { type: String, required: true },
+    description: { type: String, default: '' },
+    startsOn: Date,
+    endsOn: Date,
+    restrictMinors: { type: Boolean, default: false },
+    quota: { type: Number, default: 0 },
+    message: { type: String, required: true }
+  }],
 })
 
-// VenueSchema.methods.foobar = (
-//   cb: (error: any, message: string) => any
-// ) => {
-//   cb(undefined, 'foobar')
-// }
+VenueSchema.index({ location: "2dsphere" });
 
-// VenueSchema.virtual('setupCompleted').get(() => {
-//   return (
-//     true
-//   )
-// })
-
-// export const Venue: Model<IVenueModel> = model<IVenueModel>('Venue', VenueSchema)
+export const Venue: Model<IVenueModel> = model<IVenueModel>('Venue', VenueSchema)

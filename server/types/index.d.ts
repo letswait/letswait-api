@@ -16,3 +16,17 @@ export type Point = [number, number]
 //   mexican = 'mexican',
 //   thai = 'thai',
 // }
+
+export interface IWheelSegment {
+  logo: string
+  name: string
+  venueId?: string
+  campaignId?: string
+  priceLevel?: number
+  message?: string
+  code?: string
+}
+export interface IWheel {
+  segments: IWheelSegment[]
+  chosenSegment: number
+}

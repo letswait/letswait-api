@@ -3,6 +3,8 @@ import path = require('path')
 import fs = require('fs')
 import sidewalk from './library/sidewalk'
 
+import moment = require('moment')
+
 // Setup Express
 import express = require('express')
 const app = express()
@@ -38,6 +40,7 @@ import Keygrip = require('keygrip');
 // Setup Authentication
 app.use(cookieSession({
   name: 'session',
+  expires: moment().add(10, 'years').toDate(),
   keys: new Keygrip(['lastingConnecti0ns','quite ch4rming'], 'SHA384', 'base64'),
 }))
 app

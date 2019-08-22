@@ -4,7 +4,7 @@ import sidewalk from '../library/sidewalk'
 
 export default function (req, res) {
   sidewalk.warning('Changing User Profile')
-  User.findById(req.user._id, (err, user: IUserModel) => {
+  User.findById(req.user._id, (err, user) => {
     if(err || !user) res.status(500).send()
     sidewalk.success('found user', user)
     const changes = req.body
