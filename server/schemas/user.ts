@@ -88,7 +88,6 @@ export let UserSchema = new Schema({
   //   ]
   // }},
   swipeFitness: Number,
-  actions: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
 })
 
 UserSchema.set('toObject', { virtuals: true })
