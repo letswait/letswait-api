@@ -25,12 +25,20 @@ export default {
   }
 }
 
+const createExtension = (type: 'image/heic' | 'image/jpeg')  => {
+  switch(type) {
+    case 'image/heic': return '.heic'
+    case 'image/jpeg': return '.jpg'
+    default: return '.png'
+  }
+}
+
 const createForm = (
   req: any,
   res: any,
   uploadDirectory: string,
 ) => {
-  console.log('start formdata', req, uploadDirectory)
+  console.log('start formdata', req.formdata, uploadDirectory)
   let fileCount: number = 0
   let locations: string[] = []
   const form = new formidable.IncomingForm()
@@ -43,16 +51,21 @@ const createForm = (
   })
   form.on('file', (name: string, file: formidable.File) => {
     fileCount++
-    console.log(file)
+    // console.log(file)
     if(file.hasOwnProperty('path')) {
       console.log('Upload Module Data: ', file, name)
-      fs.readFile(file.path, (err: NodeJS.ErrnoException, data: Buffer) => {
+      fs.readFile(`${file.path}`, (err: NodeJS.ErrnoException, data: Buffer) => {
+        console.log(`${file.path}`, err, data, 'SHARPENING IMAGES')
         const location = sharp(data)
-        .toFormat('jpeg')
+        .jpeg({
+          quality: 100,
+          chromaSubsampling: '4:4:4'
+        })
         .toBuffer()
         .then(async (data) => {
+          console.log(data, 'IMAGE SHARPENED')
           console.log('uploading to s3 now')
-          const newLocation = await uploadPhoto(data, file, uploadDirectory, res)
+          const newLocation = await uploadPhoto(data, file, uploadDirectory, res, file.type as any)
           locations = locations.concat([newLocation])
         })
       })
@@ -80,6 +93,7 @@ const createForm = (
   })
   form.parse(req, (err) => {
     console.log('ended stream')
+    console.log('err? ', err)
     if(err) res.end()
   })
 }
@@ -89,8 +103,10 @@ const uploadPhoto = async (
   uploaded: formidable.File,
   uploadDirectory: string,
   res: Response,
+  type: 'image/heic' | 'image/jpeg'
 ): Promise<string> => {
-  const extension = '.jpg'
+  let extension: '.jpg' | '.png' | '.heic' = createExtension(type)
+  
   console.log('ext ', extension)
   const url = `uploads/${uploadDirectory}/${new Random().rand64bit(64)}${extension}`
   console.log('url', url)

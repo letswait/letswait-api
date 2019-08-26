@@ -50,13 +50,40 @@ export default {
             [`devices.${req.headers.uuid}.codeValid`]: true,
             [`devices.${req.headers.uuid}.lastLogin`]: new Date(),
           }
-          User.findByIdAndUpdate(req.user._id, { $set: target }, (err, savedUser) => {
+          User.findOneAndUpdate(
+            { _id: req.user._id }, 
+            { $set: target },
+            {
+              new: true,
+              projection: {
+                age: true,
+                admin: true,
+                name: true,
+                birth: true,
+                registered: true,
+                hideProfile: true,
+                significantOther: true,
+                sms: true,
+                tokens: true,
+                profile: true,
+                searchSettings: true,
+              },
+            },
+            (err, savedUser) => {
             if(err) throw 'Couldn\'t Log In'
             if(savedUser) {
               sidewalk.success('Saved User')
-              if(savedUser.registered) {
+              const jsonUser = savedUser.toJSON()
+              if(jsonUser.admin) {
+                jsonUser.canSummonControlPanel = true
+              } else if(typeof jsonUser.admin !== 'undefined') {
+                delete jsonUser.admin
+              }
+              const isRegistered = !!jsonUser.registered
+              delete jsonUser.registered
+              if(isRegistered) {
                 sidewalk.warning(`User Registered: Sending to app`)
-                res.status('200').send({ accepted: true, user: savedUser})
+                res.status('200').send({ accepted: true, user: jsonUser })
               } else {
                 sidewalk.warning(`User not registered, Sending Setup Routes`)
                 res.status('200').send({ accepted: true, remainingSetupRoutes: [

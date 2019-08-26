@@ -37,17 +37,33 @@ app.use(bodyparser.urlencoded({ extended: true }))
 import passport = require('passport')
 import cookieSession = require('cookie-session')
 import Keygrip = require('keygrip');
-// Setup Authentication
-app.use(cookieSession({
+
+const sessionMiddleware = cookieSession({
   name: 'session',
   expires: moment().add(10, 'years').toDate(),
   keys: new Keygrip(['lastingConnecti0ns','quite ch4rming'], 'SHA384', 'base64'),
-}))
+})
+
+// Setup Authentication
+app.use(sessionMiddleware)
 app
   .use(passport.initialize())
   .use(passport.session())
 
 import './pass'
+
+// var io = require("socket.io")(server)
+
+// io.use(function(socket, next){
+//   // Wrap the express middleware
+//   console.log("CONNECTING SOCKET")
+//   console.log(socket)
+//   // sessionMiddleware(socket.request, socket.response, next);
+// })
+// io.on("connection", function(socket){
+//   var userId = socket.request.session.passport.user;
+//   console.log("Your User ID is", userId);
+// });
 
 // const io = require('socket.io')(server)
 // import { socketRouter } from './routes/sockets/'
@@ -72,6 +88,7 @@ app.use('/api/feed', api_routes.feed)
 app.use('/api', api_routes.api)
 /// app.use("/api/admin", api_routes.admin)
 
+let server: any
 import { ServerOptions } from 'https'
 const PORT = (process.env.PORT || 8080)
 // Setup HTTP Connections
@@ -89,9 +106,35 @@ if(process.env.NODE_ENV !== 'production') {
     res.status(200).sendFile('/Users/saul/Projects/LetsWait/LetsWaitServer/letswaitapi/security/server_dev.crt')
   })
 } else {
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     sidewalk.warning('Initializing Production HTTPS Server...')
   })
 }
+
+var io = require("socket.io")(server)
+
+io.use(function(socket, next){
+  // Wrap the express middleware
+  console.log("CONNECTING SOCKET")
+  console.log(socket)
+  // sessionMiddleware(socket.request, socket.response, next);
+})
+io.on("connection", function(socket){
+  var userId = socket.request.session.passport.user;
+  console.log("Your User ID is", userId);
+});
+
+
+// Set up the Socket.IO server
+// var io = require("socket.io")(server)
+//     .use(function(socket, next){
+//         // Wrap the express middleware
+//         console.log(socket)
+//         // sessionMiddleware(socket.request, socket.response, next);
+//     })
+//     .on("connection", function(socket){
+//         var userId = socket.request.session.passport.user;
+//         console.log("Your User ID is", userId);
+//     });
 
 export default app

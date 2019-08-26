@@ -44,6 +44,7 @@ export let UserSchema = new Schema({
   matches: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
   lastLocation: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
   lastLocationDisplayName: String,
+  hideProfile: { type: Boolean, default: false },
   profile: {
     gender: String,
     images: [String],
@@ -58,13 +59,13 @@ export let UserSchema = new Schema({
       name: { type: String, default: '' },
       graduationYear: Number,
     },
-    questions: { type: Map, of: String },
+    questions: Schema.Types.Mixed,
     height: Number,
   },
   searchSettings: {
     sexualPreference: { type: String, enum: ['male','female', 'everyone'] },
     radius: { type: Number, min: 10, max: 100, default: 50 },
-    ageRange: [{ type: Number, min: 18, max: 100 }],
+    ageRange: [{ type: Number, min: 18, max: 100, default: [18,32] }],
   },
   isBot: Boolean,
   botBehavior: {
@@ -88,6 +89,7 @@ export let UserSchema = new Schema({
   //   ]
   // }},
   swipeFitness: Number,
+  // actions: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
 })
 
 UserSchema.set('toObject', { virtuals: true })

@@ -20,6 +20,7 @@ async function getMatches(req, res) {
     match: { _id: { $ne: req.user._id }},
     options: { lean: true }
   }).lean()
+  console.log('MATCH: ', JSON.stringify(matches[0]))
   // const matches = await Match.find({'_id': { $in: req.user.matches }}).lean()
 
   try {
@@ -67,28 +68,5 @@ async function getMatches(req, res) {
       message: err,
     })
   }
-
-  // let enqueuedMatches = []
-  // let uninitializedMatches = []
-  // let chatMatches = []
-  // if(matches && matches.length) {
-  //   enqueuedMatches = [ ...matches.filter((match, i, arr) => {
-  //     let [u, c] = match.users[0].userId === req.user._id ? [0, 1] : [1, 0]
-  //     return match.users[u].state === 'queued' && match.users[c].state === 'accepted'
-  //   })]
-  //   chatMatches = [ ...matches.filter((match, i, arr) => {
-  //     return (match.state === 'matched' || match.state === 'timeout') &&
-  //            match.chat && match.chat.length
-  //   })]
-  //   uninitializedMatches = [ ...matches.filter((match, i, arr) => {
-  //     return (match.state === 'matched' || match.state === 'timeout') &&
-  //            (!match.chat || !match.chat.length)
-  //   })]
-  // }
-  // res.status(200).send({
-  //   matchQueue: uninitializedMatches,
-  //   chats: chatMatches,
-  //   hiddenMatches: enqueuedMatches,
-  // })
 }
 export default getMatches

@@ -19,6 +19,7 @@ export interface IUserDocument extends mongoose.Document {
   matches?: (mongoose.Schema.Types.ObjectId | IMatchModel)[]
   lastLocation?: Point
   lastLocationDisplayName?: string
+  hideProfile: boolean
   profile: {
     gender?: string
     images?: [string, string?, string?, string?, string?, string?]
@@ -43,6 +44,8 @@ export interface IUserDocument extends mongoose.Document {
     ageRange: [number, number]
   }
   swipeFitness?: number
+  volatility?: number
+  volatileActions?: mongoose.Schema.Types.ObjectId[]
   actions?: mongoose.Schema.Types.ObjectId[]
   isBot?: boolean
   botBehavior: {
