@@ -14,7 +14,7 @@ export interface IUserDocument extends mongoose.Document {
   significantOther?: string
   created: Date
   registered?: Date
-  devices?: Map<string, IUserDevice>
+  devices?: IUserDevice[]
   tokens: number
   matches?: (mongoose.Schema.Types.ObjectId | IMatchModel)[]
   lastLocation?: Point
@@ -43,10 +43,11 @@ export interface IUserDocument extends mongoose.Document {
     radius: number 
     ageRange: [number, number]
   }
-  swipeFitness?: number
-  volatility?: number
-  volatileActions?: mongoose.Schema.Types.ObjectId[]
-  actions?: mongoose.Schema.Types.ObjectId[]
+  swipeFitness: number
+  volatility: number
+  volatileActions: mongoose.Schema.Types.ObjectId[]
+  blockedUsers: mongoose.Schema.Types.ObjectId[]
+  actions: mongoose.Schema.Types.ObjectId[]
   isBot?: boolean
   botBehavior: {
     swipesRight: boolean, // Matches with users
@@ -68,14 +69,15 @@ export enum UserDeviceOS {
  *                where its key is the device UUID
  */
 export interface IUserDevice {
+  _id: string,
+  os: UserDeviceOS
+  token: string
+  accessToken?: string
   activeCode?: string
   codeValid?: boolean
-  lastLogin?: Date
-  accessToken?: string
   expiresOn?: Date
+  lastLogin?: Date
   refreshToken?: string
-  token: string
-  os: UserDeviceOS
 }
 
 /**

@@ -38,11 +38,11 @@ const createForm = (
   res: any,
   uploadDirectory: string,
 ) => {
-  console.log('start formdata', req.formdata, uploadDirectory)
+  // // console.log('start formdata', req.formdata, uploadDirectory)
   let fileCount: number = 0
   let locations: string[] = []
   const form = new formidable.IncomingForm()
-  console.log('creating form')
+  // console.log('creating form')
   form.uploadDir = '/tmp'
   form.keepExtensions = true
   form.multiples = true
@@ -51,11 +51,11 @@ const createForm = (
   })
   form.on('file', (name: string, file: formidable.File) => {
     fileCount++
-    // console.log(file)
+    // // console.log(file)
     if(file.hasOwnProperty('path')) {
-      console.log('Upload Module Data: ', file, name)
+      // console.log('Upload Module Data: ', file, name)
       fs.readFile(`${file.path}`, (err: NodeJS.ErrnoException, data: Buffer) => {
-        console.log(`${file.path}`, err, data, 'SHARPENING IMAGES')
+        // console.log(`${file.path}`, err, data, 'SHARPENING IMAGES')
         const location = sharp(data)
         .jpeg({
           quality: 100,
@@ -63,23 +63,23 @@ const createForm = (
         })
         .toBuffer()
         .then(async (data) => {
-          console.log(data, 'IMAGE SHARPENED')
-          console.log('uploading to s3 now')
+          // console.log(data, 'IMAGE SHARPENED')
+          // console.log('uploading to s3 now')
           const newLocation = await uploadPhoto(data, file, uploadDirectory, res, file.type as any)
           locations = locations.concat([newLocation])
         })
       })
     } else {
-      console.log('no files provided')
+      // console.log('no files provided')
       res.status('500').send({ err: true, message: 'No files were provided' })
     }
   })
   form.on('end', () => {
-    console.log('finished')
+    // console.log('finished')
     const checkUploadEnd = setInterval(
       () => {
         if(locations.length === fileCount) {
-          console.log(locations.length, fileCount)
+          // console.log(locations.length, fileCount)
           clearInterval(checkUploadEnd)
           res.status(200).send({
             success: true,
@@ -92,8 +92,8 @@ const createForm = (
     )
   })
   form.parse(req, (err) => {
-    console.log('ended stream')
-    console.log('err? ', err)
+    // console.log('ended stream')
+    // console.log('err? ', err)
     if(err) res.end()
   })
 }
@@ -107,9 +107,9 @@ const uploadPhoto = async (
 ): Promise<string> => {
   let extension: '.jpg' | '.png' | '.heic' = createExtension(type)
   
-  console.log('ext ', extension)
+  // console.log('ext ', extension)
   const url = `uploads/${uploadDirectory}/${new Random().rand64bit(64)}${extension}`
-  console.log('url', url)
+  // console.log('url', url)
   const params = {
     Bucket: config.awsBucket,
     Key: url,
@@ -122,7 +122,7 @@ const uploadPhoto = async (
   return s3.upload(params).promise().then((data: aws.S3.ManagedUpload.SendData) => {
     return data.Location
   }).catch((err: Error) => {
-    console.log('Could not upload photos', err)
+    // console.log('Could not upload photos', err)
     return ''
   })
 }

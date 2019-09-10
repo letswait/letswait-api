@@ -91,4 +91,4 @@ typings/
 dist/
 
 # private keys
-security/
+security/sendgrid.env

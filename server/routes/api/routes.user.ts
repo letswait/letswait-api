@@ -35,14 +35,14 @@ api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRe
       profile,
       searchSettings,
     } = req.user
-    console.log('Got User: ', name, birth, registered)
-    console.log('Showing Session: ', req.session)
+    // console.log('Got User: ', name, birth, registered)
+    // console.log('Showing Session: ', req.session)
     sidewalk.success('Facebook Passport Login')
     if(registered) {
-      sidewalk.success(`User Registered: Sending to app...`)
+      // sidewalk.success(`User Registered: Sending to app...`)
       res.status(200).send({ accepted: true, user: req.user })
     } else {
-      sidewalk.detour(`User not registered, Sending Setup Routes...`)
+      // sidewalk.detour(`User not registered, Sending Setup Routes...`)
 
       res.redirect(307, `letswaitdating://app?routes=${JSON.stringify([
         ...(birth ? [] : ['/setup/birthdate']),
@@ -71,6 +71,6 @@ api.get('/logout', pass.auth, (req, res) => {
 })
 
 import postToken from '../../modules/user-post-sns-token'
-api.get('/post-sns-token', pass.ensureAuthenticated, postToken)
+api.get('/post-sns-token', pass.auth, postToken)
 
 export default api

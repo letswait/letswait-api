@@ -8,6 +8,8 @@ import {
 
 import { IMatch } from '../types/match'
 
+import { pointSchema } from './subdocs'
+
 export interface IMatchModel extends IMatch, Document {
 }
 
@@ -20,12 +22,13 @@ export let MatchSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     message: {
       text: { type: String, required: true },
-      images: [String],
+      images: String,
       cloudfront: String,
       location: {
-        type: { type: String },
-        coordinates: [],
+        type: pointSchema,
+        required: false,
       },
+      campaignId: String,
     },
     reactions: { type: Map, of: String }, // key/value pair with user _id and reaction
   }],
@@ -34,8 +37,8 @@ export let MatchSchema = new Schema({
     logo: String,
     name: String,
     location: {
-      type: { type: String },
-      coordinates: [],
+      type: pointSchema,
+      required: true,
     },
     campaignId: String,
     expiresOn: { type: Date, default: moment().add(7, 'days').toDate() },

@@ -17,7 +17,7 @@ const	TWILIO_NUMBERS  = [ '+12029152786' ]
 const FB_ID = '331108297584040'
 const FB_SECRET = '7c4b898fa9ffa12b1028816d5f1d036e'
 
-let MONGO_URL = ''
+// let MONGO_URL = 'mongodb://localhost:27017/letswait-development'
 
 const EMAIL_REGEX = new RegExp('/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/')
 const PHONE_REGEX = new RegExp('/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/', 'im')
@@ -25,11 +25,14 @@ const ESCAPE_REGEX = (s: any) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
 let FB_CALLBACK_URL = 'https://lets-wait-staging.herokuapp.com/api/user/facebook-auth/callback'
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV === "production") {
+}
+let MONGO_URL= 'mongodb://admin:passw0rd@ds157735.mlab.com:57735/letswait-development'
+
+if(process.env.NODE_ENV === 'development') {
   FB_CALLBACK_URL = 'https://letswait.ngrok.io/api/user/facebook-auth/callback'
 }
 
-MONGO_URL       = 'mongodb://admin:passw0rd@ds157735.mlab.com:57735/letswait-development'
 AWS_BUCKET_NAME = 'letswait-development'
 CLOUDFRONT_URL  = 'https://d1859sbnlrif6h.cloudfront.net'
 

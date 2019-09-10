@@ -1,9 +1,11 @@
 import config from "../config"
+import sidewalk from './sidewalk'
 
 const googleMapsClient = require('@google/maps').createClient({
   key: config.googleMapsKey,
   Promise: Promise,
 });
+sidewalk.emphasize('starting Google Maps Services')
 
 export function toRadians(a: number) {
   return a * (Math.PI/180)

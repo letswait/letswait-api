@@ -5,8 +5,7 @@ import sidewalk from '../library/sidewalk'
 
 async function getMatches(req, res) {
   // Get Matches
-  sidewalk.emphasize('getting matches')
-  // const user = await User.findOne({ 'sms': '+13175511795' })
+  // sidewalk.emphasize('getting matches')
   const matches = await Match.find({'_id': { $in: req.user.matches }}).populate({
     path: 'userProfiles',
     select: `
@@ -20,8 +19,6 @@ async function getMatches(req, res) {
     match: { _id: { $ne: req.user._id }},
     options: { lean: true }
   }).lean()
-  console.log('MATCH: ', JSON.stringify(matches[0]))
-  // const matches = await Match.find({'_id': { $in: req.user.matches }}).lean()
 
   try {
     // Find Matches where candidates are awaiting acceptance

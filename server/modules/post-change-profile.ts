@@ -3,10 +3,10 @@ import { IUserModel } from 'schemas/user'
 import sidewalk from '../library/sidewalk'
 
 export default function (req, res) {
-  sidewalk.warning('Changing User Profile')
+  // sidewalk.warning('Changing User Profile')
   User.findById(req.user._id, (err, user) => {
     if(err || !user) res.status(500).send()
-    sidewalk.success('found user', user)
+    // sidewalk.success('found user', user)
     const changes = req.body
     user.profile.gender = changes.gender || user.profile.gender
     user.searchSettings.sexualPreference = ((): 'male' | 'female' | 'everyone' => {
@@ -43,10 +43,10 @@ export default function (req, res) {
     }
     user.save((err, savedUser) => {
       if(err || !savedUser) {
-        sidewalk.error('Could not save user profile changes')
+        // sidewalk.error('Could not save user profile changes')
         res.status(500).send()
       } else {
-        sidewalk.success('Saved User Changes')
+        // sidewalk.success('Saved User Changes')
         res.status(200).send({ accepted: true })
       }
     })

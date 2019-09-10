@@ -1,6 +1,9 @@
 export interface ObjectOf<T> {[key: string]: T}
 
-export type Point = [number, number]
+export type Point = {
+  type: "Point"
+  coordinates: [number, number]
+}
 
 // export enum Food {
 //   alcohol = 'alcohol',

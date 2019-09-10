@@ -28,6 +28,7 @@ export interface IVenue {
   priceLevel?: number
   visitedBy: [IVisit]
   campaigns: [ICampaign]
+  lastSurveyed: Date,
 }
 
 export interface IVisit {

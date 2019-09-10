@@ -11,6 +11,8 @@ import { IUserDocument } from '../types/user'
 import { genRandomNumbers } from 'library/util';
 import { IMatchModel } from './match';
 
+import { pointSchema, deviceSchema } from './subdocs'
+
 export interface IUser extends IUserDocument {
   setupCompleted: boolean,
   age: number,
@@ -30,19 +32,13 @@ export let UserSchema = new Schema({
   smsVerified: Boolean,
   created: { type: Date, default: Date.now() },
   registered: Date,
-  devices: {type: Map, of: {
-    activeCode: String,
-    lastLogin: Date,
-    codeValid: Boolean,
-    expiresOn: Date,
-    accessToken: String,
-    refreshToken: String,
-    token: { type: String, default: '' },
-    os: { type: String, enum: ['ios','android','other'], default: 'other' },
-  }},
+  devices: [deviceSchema],
   tokens: { type: Number, default: 3 },
   matches: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
-  lastLocation: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
+  lastLocation: {
+    type: pointSchema,
+    required: false,
+  },
   lastLocationDisplayName: String,
   hideProfile: { type: Boolean, default: false },
   profile: {
@@ -63,10 +59,15 @@ export let UserSchema = new Schema({
     height: Number,
   },
   searchSettings: {
-    sexualPreference: { type: String, enum: ['male','female', 'everyone'] },
+    sexualPreference: { type: String, enum: ['male', 'female', 'everyone'] },
     radius: { type: Number, min: 10, max: 100, default: 50 },
     ageRange: [{ type: Number, min: 18, max: 100, default: [18,32] }],
   },
+  swipeFitness: { type: Number, default: 0.7 },
+  volatility: { type: Number, default: 0 },
+  volatileActions: [{ type: Schema.Types.ObjectId, ref: 'Action'}],
+  blockedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  actions: [{ type: Schema.Types.ObjectId, ref: 'Action'}],
   isBot: Boolean,
   botBehavior: {
     swipesRight: Boolean,
@@ -88,9 +89,9 @@ export let UserSchema = new Schema({
   //     Schema.Types.ObjectId
   //   ]
   // }},
-  swipeFitness: Number,
-  // actions: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
 })
+
+UserSchema.index({ 'lastLocation': "2dsphere" })
 
 UserSchema.set('toObject', { virtuals: true })
 UserSchema.set('toJSON', { virtuals: true })
@@ -133,9 +134,9 @@ UserSchema.methods.hasMatchWith = async function(candidateId: string) {
       userProfiles: Types.ObjectId(candidateId)
     },
   }, function (err, user) {
-    console.log('Got Populated MAtches', err, user)
+    // console.log('Got Populated MAtches', err, user)
     if(err || !user) return undefined
-    console.log(user.matches)
+    // console.log(user.matches)
     const { matches } = user
     if(matches && matches[0]) return matches[0].state
     return undefined

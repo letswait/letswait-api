@@ -17,8 +17,6 @@ export default async function(req, res) {
     const candidateId = userKeys[0] === userId ? userKeys[1] : userKeys[0]
     const candidateAction = match.users.get(candidateId)
 
-    console.log(match)
-
     // Set User Action
     match.users.set(userId, action)
 
@@ -65,7 +63,7 @@ export default async function(req, res) {
     function updateMatch() {
       Match.updateOne({ _id: matchId }, match, (err, raw) => {
         if(!err) {
-          sidewalk.success('Updated Match!')
+          // sidewalk.success('Updated Match!')
         }
       })
     }

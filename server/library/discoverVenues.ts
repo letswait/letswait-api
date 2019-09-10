@@ -3,59 +3,116 @@ import googleMapsClient from './maps'
 import { IVenueModel } from '../schemas/venue'
 import sidewalk from './sidewalk'
 
-export default async function discoverVenues(location: number[]): Promise<number> {
-  sidewalk.warning('Generating Shadow Venues')
-  return await (googleMapsClient as any).placesNearby({
+export default async function discoverVenues(location: number[], radius?: number): Promise<number> {
+  // sidewalk.warning('Generating Shadow Venues')
+  let continueSearch = true
+  let nextPageToken = ''
+
+  let discoveredVenues: any[] = await googleMapsClient.placesNearby({
     location,
-    language: 'en',
-    radius: 50000,
+    radius: radius || 50000,
     type: 'restaurant',
-  }).asPromise().then(async (response): Promise<number> => {
-    sidewalk.warning('VENUES')
-    if(response && response.json && response.json.results && response.json.results.length) {
-      const results = response.json.results
-      let newVenues: IVenueModel[] = []
-      for(let i = results.length; i--;) {
-        const existingVenue = await Venue.findOne({ googleMapsId: results[i].place_id }).lean()
-        if(!existingVenue) {
-          const res = results[i]
-          newVenues = newVenues.concat([ new Venue({
+  }).asPromise()
+  .then((response: any) => returnResults(response))
+  .catch((err: any) => console.log('There was an error: ', err))
+
+  function returnResults(response) {
+    if(response && response.json) {
+      const { next_page_token, results } = response.json
+      if(next_page_token) {
+        nextPageToken = next_page_token
+      } else {
+        continueSearch = false
+        nextPageToken = ''
+      }
+      return results || []
+    }
+  }
+
+  while(continueSearch) {
+    const newAdditions = await googleMapsClient.placesNearby({
+      pagetoken: nextPageToken
+    }).asPromise()
+      .then((response) => returnResults(response))
+      .catch(err => console.log('There was an error: ', err))
+    discoveredVenues = discoveredVenues.concat(newAdditions)
+      
+  }
+  
+  discoveredVenues = discoveredVenues.filter(value => value)
+  
+  /**
+   * @async
+   * @name Venue.UpsertMany - Quickly and efficiently updates and upserts discovered venues.
+   * --------------------------------------------------------------------------------------------
+   * @description This code block takes the resulting array of discovered venues, updates/upserts
+   *              documents as neeeded, in a data protective way ($setOnInsert). Looks scary but
+   *              should be easy to understand after a second. the IIFE is just for berevity.
+   *               - hint: mongoose.model.query.exec() returns a full promise.
+   * --------------------------------------------------------------------------------------------
+   * @todo Add Optional Spinner Filter. if we can immediately send the spinner upon finding first
+   *       8 Venues that match the intended query, we can make venue discover much much faster.
+   * --------------------------------------------------------------------------------------------
+   * @todo Add Check for Claimed Venues, claimed venues can be managed manually if that field was
+   *       physically changed before, This "Extended Release" of responsibilities allow managers
+   *       to tailor to what degree they manage their LetsWait accounts without punishing venues
+   *       that dont devote as much time to manage their account.
+   */
+  const results = discoveredVenues
+  const foundVenues = await Promise.all<IVenueModel>(
+    results.map((res, i, arr) => (async () => {
+      const VenuePromise = Venue.findOneAndUpdate(
+        { googleMapsId: results[i].place_id },
+        {
+          $setOnInsert: {
             location: {
               type: 'Point',
               coordinates: [res.geometry.location.lng, res.geometry.location.lat],
             },
             viewport: {
-              northeast: [res.geometry.viewport.northeast.lng, res.geometry.viewport.northeast.lat],
-              southwest: [res.geometry.viewport.southwest.lng, res.geometry.viewport.southwest.lat],
+              northeast: {
+                type: 'Point',
+                coordinates: [res.geometry.viewport.northeast.lng, res.geometry.viewport.northeast.lat],
+              },
+              southwest: {
+                type: 'Point',
+                coordinates: [res.geometry.viewport.southwest.lng, res.geometry.viewport.southwest.lat],
+              },
             },
             name: res.name,
             googleMapsId: res.place_id,
             restrictMinors: false,
             address: res.vicinity,
+            initialLogo: res.icon || '',
             municipality: 'Fishers',
             state: 'Indiana',
             country: 'United States',
-            initialLogo: res.icon || '',
-            logo: res.icon || '',
-            priceLevel: res.priceLevel || 0,
             campaigns: [{
+              priceLevel: res.priceLevel || 0,
               label: 'Initial Campaign',
-              message: `${(Math.floor(Math.random() * 9) + 1) * 5}% off order`
+              message: `${(Math.floor(Math.random() * 4) + 1) * 5} off order`
             }]
-          })])
+          },
+          $set: {
+            logo: res.icon || '',
+            lastSurveyed: new Date(),
+          },
+        },
+        {
+          upsert: true,
+          new: true,
         }
-      }
-      if(newVenues.length) {
-        sidewalk.emphasize('CREATING SHADOW VENUES')
-        const shadowVenues = await Venue.insertMany(newVenues)
-        return shadowVenues.length
-      } else {
-        return 0
-      }
-    } else {
-      return 0
-    }
+      ).exec()
+      return await VenuePromise.then(doc => doc)
+    })())
+  )
+  const newVenues = foundVenues.filter((venue, i, arr) => {
+    return venue.isNew
   })
-  
-  // async function(err, response): Promise<void> )
+  /**
+   * @todo Add newVenue map to get venueId[] to save to the "Discovered Venues" action.
+   */
+  const newVenueCount = newVenues.length
+  // sidewalk.emphasize(`${newVenueCount} venues discovered`)
+  return newVenueCount
 }

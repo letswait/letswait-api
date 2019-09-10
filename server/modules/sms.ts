@@ -8,15 +8,16 @@ import sidewalk from '../library/sidewalk'
 
 export default {
   send: (req: any, res: any) => {
-    const { sms, devices }: { sms: string, devices: Map<string, IUserDevice>} = req.user
-    sidewalk.warning(`Receiving SMS Number: ${sms}`)
+    const { sms, devices }: { sms: string, devices: IUserDevice[]} = req.user
+    // sidewalk.warning(`Receiving SMS Number: ${sms}`)
     // Get Device
+    const device = (devices as any).id(req.headers.uuid)
     const {
       activeCode,
       codeValid,
       accessToken,
       refreshToken,
-    } = req.user.devices.get(req.headers.uuid)
+    } = device
     if(sms && activeCode && !codeValid) {
       // Create Twilio Instance
       const client = twilio(config.twilioSID, config.twilioAuth)
@@ -25,7 +26,7 @@ export default {
         to: sms,
         from: config.twilioNumbers[0],
       }).then((message: any) => {
-        sidewalk.success('Sent SMS Code to client')
+        // sidewalk.success('Sent SMS Code to client')
         res.status('200').send({
           accepted: true,
           redirect: '/setup/code',
@@ -38,17 +39,21 @@ export default {
     }
   },
   receive: (req: any, res: any) => {
-    sidewalk.warning(`Receiving SMS Code: ${req.body.code}`)
+    // sidewalk.warning(`Receiving SMS Code: ${req.body.code}`)
     try {
       if(!req.user || (req.user && req.user.sms !== req.body.sms)) throw 'incorrect sms'
-      const device = req.user.devices.get(req.headers.uuid)
+      let deviceIndex = 0
+      const device = req.user.devices.filter((device, i, arr) => {
+        deviceIndex = i
+        return device._id === req.headers.uuid
+      })[0]
       if(device) {
         const activeCode = device.activeCode
         if(activeCode === req.body.code) {
-          sidewalk.success('SMS Code Valid')
+          // sidewalk.success('SMS Code Valid')
           const target = {
-            [`devices.${req.headers.uuid}.codeValid`]: true,
-            [`devices.${req.headers.uuid}.lastLogin`]: new Date(),
+            [`devices[${deviceIndex}].codeValid`]: true,
+            [`devices[${deviceIndex}].lastLogin`]: new Date(),
           }
           User.findOneAndUpdate(
             { _id: req.user._id }, 
@@ -70,9 +75,12 @@ export default {
               },
             },
             (err, savedUser) => {
+            /**
+             * @todo This block is used multiple times, need to turn it into a factory.
+             */
             if(err) throw 'Couldn\'t Log In'
             if(savedUser) {
-              sidewalk.success('Saved User')
+              // sidewalk.success('Saved User')
               const jsonUser = savedUser.toJSON()
               if(jsonUser.admin) {
                 jsonUser.canSummonControlPanel = true
@@ -82,10 +90,10 @@ export default {
               const isRegistered = !!jsonUser.registered
               delete jsonUser.registered
               if(isRegistered) {
-                sidewalk.warning(`User Registered: Sending to app`)
+                // sidewalk.warning(`User Registered: Sending to app`)
                 res.status('200').send({ accepted: true, user: jsonUser })
               } else {
-                sidewalk.warning(`User not registered, Sending Setup Routes`)
+                // sidewalk.warning(`User not registered, Sending Setup Routes`)
                 res.status('200').send({ accepted: true, remainingSetupRoutes: [
                   ...(savedUser.birth ? [] : ['/setup/birthdate']),
                   ...(savedUser.name ? [] : ['/setup/name']),
@@ -105,7 +113,7 @@ export default {
         throw 'Unknown UUID'
       }
     } catch(e) {
-      e && sidewalk.error(e, true)
+      e && // sidewalk.error(e, true)
       res.status('500').send()
     }
   }

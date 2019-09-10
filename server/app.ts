@@ -14,7 +14,7 @@ app.use(function(req, res, next) {
     sidewalk.detour('Redirecting Unsecure Connection to HTTP')
     res.redirect(301, 'https://' + req.hostname + ':port' + req.originalUrl);
   } else {
-    sidewalk.success('Established Secure Connection with Client')
+    // sidewalk.success('Established Secure Connection with Client')
     return next();
   }
 });
@@ -52,31 +52,6 @@ app
 
 import './pass'
 
-// var io = require("socket.io")(server)
-
-// io.use(function(socket, next){
-//   // Wrap the express middleware
-//   console.log("CONNECTING SOCKET")
-//   console.log(socket)
-//   // sessionMiddleware(socket.request, socket.response, next);
-// })
-// io.on("connection", function(socket){
-//   var userId = socket.request.session.passport.user;
-//   console.log("Your User ID is", userId);
-// });
-
-// const io = require('socket.io')(server)
-// import { socketRouter } from './routes/sockets/'
-// Setup Socket.io
-//   .use((socket, next) => {
-//     sidewalk.warning('Client connecting')
-//     // cookieSession(socket.request, {} as any, next)
-//   })
-//   .on('connection', (socket) => {
-//     const userId = socket.request.session.passport.user
-//     sidewalk.success(`user: ${userId} has joined!`)
-//   })
-
 // Routes
 import api_routes from './routes/api/'
 app.use('/api/user', api_routes.user)
@@ -88,6 +63,9 @@ app.use('/api/feed', api_routes.feed)
 app.use('/api', api_routes.api)
 /// app.use("/api/admin", api_routes.admin)
 
+// Setup Services
+require('./library/email')
+
 let server: any
 import { ServerOptions } from 'https'
 const PORT = (process.env.PORT || 8080)
@@ -98,7 +76,7 @@ if(process.env.NODE_ENV !== 'production') {
     key: fs.readFileSync(`${__dirname}/../security/server_dev.key`, 'utf-8'),
     cert: fs.readFileSync(`${__dirname}/../security/server_dev.crt`, 'utf-8'),
   }
-  httpolyglot.createServer(httpsOptions, app).listen(PORT, () => {
+  server = httpolyglot.createServer(httpsOptions, app).listen(PORT, () => {
     sidewalk.warning('Initializing HTTPS Server')
   })
   app.get('/localcert', (req, res) => {
@@ -114,27 +92,11 @@ if(process.env.NODE_ENV !== 'production') {
 var io = require("socket.io")(server)
 
 io.use(function(socket, next){
-  // Wrap the express middleware
-  console.log("CONNECTING SOCKET")
-  console.log(socket)
-  // sessionMiddleware(socket.request, socket.response, next);
+  // Wrap the cookie-session into Socket
+  sessionMiddleware(socket.request, {} as any, next);
 })
-io.on("connection", function(socket){
-  var userId = socket.request.session.passport.user;
-  console.log("Your User ID is", userId);
-});
 
-
-// Set up the Socket.IO server
-// var io = require("socket.io")(server)
-//     .use(function(socket, next){
-//         // Wrap the express middleware
-//         console.log(socket)
-//         // sessionMiddleware(socket.request, socket.response, next);
-//     })
-//     .on("connection", function(socket){
-//         var userId = socket.request.session.passport.user;
-//         console.log("Your User ID is", userId);
-//     });
+import socketRouter from './routes/sockets/index'
+io.on("connection", socketRouter);
 
 export default app

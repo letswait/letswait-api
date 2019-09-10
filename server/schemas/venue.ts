@@ -8,6 +8,8 @@ import {
 
 import { IVenue } from '../types/venue'
 
+import { pointSchema } from './subdocs'
+
 export interface IVenueModel extends IVenue, Document {
 }
 
@@ -17,13 +19,19 @@ export let VenueSchema = new Schema({
   members: { type: Map, of: String },
   googleMapsId: { type: String, required: true },
   location: {
-    type: { type: String },
-    coordinates: [],
+    type: pointSchema,
+    required: true,
   },
   // location: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
   viewport: {
-    northeast: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
-    southwest: { type: [Number], index: '2dsphere', default: [0.0, 0.0]},
+    northeast: {
+      type: pointSchema,
+      required: true,
+    },
+    southwest: {
+      type: pointSchema,
+      required: true,
+    },
   },
   food: [String],
   tags: [String],
@@ -56,8 +64,11 @@ export let VenueSchema = new Schema({
     quota: { type: Number, default: 0 },
     message: { type: String, required: true }
   }],
+  lastSurveyed: {type: Date, default: new Date()},
 })
 
 VenueSchema.index({ location: "2dsphere" });
+VenueSchema.index({ 'viewport.southwest': "2dsphere" })
+VenueSchema.index({ 'viewport.northeast': "2dsphere" })
 
 export const Venue: Model<IVenueModel> = model<IVenueModel>('Venue', VenueSchema)

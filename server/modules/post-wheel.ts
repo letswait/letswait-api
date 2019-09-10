@@ -34,8 +34,8 @@ export default function (req, res) {
       const didPostChat = await postLocation(match._id, req.user._id, {
         text: msg,
         location: venue.location,
+        campaignId: segment.campaignId
       })
-      console.log(didPostChat, 'should redirect to chat screen', `app/chat/${match._id.toString()}`)
       if(didPostChat) res.status(200).send({ matchId: match._id })
       else {
         res.staus(500).send()

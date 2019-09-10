@@ -14,21 +14,19 @@ export interface IChat {
   sentTimestamp: Date
   readTimestamp?: Date
   user: string
-  message: {
-    text: string
-    images?: string[]
-    cloudfront?: string
-    location?: Point
-  }
+  message: IMessage
   reactions: Map<string, Reaction> // key/value pair with user _id and reaction
 }
 
-export enum Reaction {
-  weird = 'weird',
-  love = 'love',
-  excited = 'excited',
-  like = 'like',
+export interface IMessage {
+  text: string
+  image?: string
+  cloudfront?: string
+  location?: Point
+  campaignId?: String
 }
+
+export type Reaction = 'weird' | 'love' | 'excited' | 'like'
 
 export type MatchState =
     'queued'
