@@ -20,3 +20,16 @@ export function sendTemplate(options: {
   };
   sendgrid.send(msg);
 }
+
+export function alertText(options: {
+  to: string,
+  body: string
+}) {
+  const msg = {
+    to: options.to,
+    from: 'test@example.com',
+    subject: 'LET\'S WAIT ::: SERVER ALERT' ,
+    text: options.body,
+  };
+  sendgrid.send(msg);
+}
