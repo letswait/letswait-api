@@ -14,6 +14,7 @@ app.use(function(req, res, next) {
     sidewalk.detour('Redirecting Unsecure Connection to HTTP')
     res.redirect(301, 'https://' + req.hostname + ':port' + req.originalUrl);
   } else {
+    sidewalk.emphasize('Established Secure Connection to HTTPS')
     return next();
   }
 });
@@ -70,11 +71,11 @@ import { ServerOptions } from 'https'
 const PORT = (process.env.PORT || 8080)
 // Setup HTTP Connections
 import httpolyglot = require('httpolyglot')
-const httpsOptions: ServerOptions = {
-  key: fs.readFileSync(`${__dirname}/../security/server_dev.key`, 'utf-8'),
-  cert: fs.readFileSync(`${__dirname}/../security/server_dev.crt`, 'utf-8'),
-}
 if(process.env.NODE_ENV === 'development') {
+  const httpsOptions: ServerOptions = {
+    key: fs.readFileSync(`${__dirname}/../security/server_dev.key`, 'utf-8'),
+    cert: fs.readFileSync(`${__dirname}/../security/server_dev.crt`, 'utf-8'),
+  }
   server = httpolyglot.createServer(httpsOptions, app).listen(PORT, () => {
     sidewalk.warning('Initializing HTTPS Server')
   })
@@ -83,7 +84,7 @@ if(process.env.NODE_ENV === 'development') {
     res.status(200).sendFile('/Users/saul/Projects/LetsWait/LetsWaitServer/letswaitapi/security/server_dev.crt')
   })
 } else {
-  server = httpolyglot.createServer(httpsOptions, app).listen(PORT, () => {
+  server = app.listen(PORT, () => {
     sidewalk.warning('Initializing Production HTTPS Server...')
   })
 }
