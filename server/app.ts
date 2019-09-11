@@ -10,13 +10,10 @@ import express = require('express')
 const app = express()
 
 app.use(function(req, res, next) {
-  console.log('middleware running!')
-  console.log(req.secure, req.protocol, req.hostname, req.originalUrl, process.env.NODE_ENV)
   if (!req.secure && process.env.NODE_ENV === 'development') {
     sidewalk.detour('Redirecting Unsecure Connection to HTTP')
     res.redirect(301, 'https://' + req.hostname + ':port' + req.originalUrl);
   } else {
-    // sidewalk.success('Established Secure Connection with Client')
     return next();
   }
 });

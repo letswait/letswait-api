@@ -106,7 +106,7 @@ async (req: any, fbAccessToken, fbRefreshToken, profile: Profile | any, done) =>
     },
   ).exec()
 
-  if(user) return done(null, user)
+  if(user) return done(null, processUser(user))
  
   /**
    * @todo on initialization, find significant other and prepare her as the
@@ -165,7 +165,7 @@ async (req: any, fbAccessToken, fbRefreshToken, profile: Profile | any, done) =>
     },
   ).exec()
 
-  if(user) return done(null, user)
+  if(user) return done(null, processUser(user))
 
   user = await User.findOneAndUpdate(
     {
@@ -216,126 +216,18 @@ async (req: any, fbAccessToken, fbRefreshToken, profile: Profile | any, done) =>
 
   if(!user) return done('couldnt find user')
 
-  // sidewalk.success('Saved User')
-  const jsonUser = user.toJSON()
-  if(jsonUser.admin) {
-    jsonUser.canSummonControlPanel = true
-  } else if(typeof jsonUser.admin !== 'undefined') {
-    delete jsonUser.admin
+  function processUser(user: any) {
+    const jsonUser = user.toJSON()
+    if(jsonUser.admin) {
+      jsonUser.canSummonControlPanel = true
+    } else if(typeof jsonUser.admin !== 'undefined') {
+      delete jsonUser.admin
+    }
+    return jsonUser
   }
   
-  return done(null, jsonUser)
+  return done(null, processUser(user))
 }))
-// {
-  // Check if there is a uuid supplied
-  // const uuid = req.query.state
-  // if(!uuid) return done('There was no uuid supplied')
-  // return done('facebook Strategy disabled')
-  // check if is old enough to use the app
-  // const {
-  //   id,
-  //   first_name,
-  //   gender,
-  //   age_range,
-  //   birthday,
-  //   significant_other,
-  // } = profile
-  // // if(age_range && age_range.min >= 18) return done('not old enough')
-  // // Setup Device Object
-  // const immutableDeviceValues = {
-  //       /**
-  //        * SNS Token
-  //        */
-  //       token: '',
-  //       /**
-  //        * Track OS, can overwrite later when device uuid
-  //        * posts the APN / Google Push Notification
-  //        */
-  //       os: req.headers.os,
-  // }
-  // const mutableDeviceValues = {
-  //       /**
-  //        * Generate Simple Access Token, Live for 2 hours,
-  //        * Passport generates a persisting session through,
-  //        * cookies, so user session information is not
-  //        * shared with the server, additionally this heavily
-  //        * simplifies running a docker swarm since theres no
-  //        * session to balance between server instances.
-  //        * we have a built in authentication to protect
-  //        * "sensitive" user interactions. However, the
-  //        * chat will probably be encoded according to 
-  //        * session cookie information, so it will work
-  //        * at all times, but only for the devices that can
-  //        * access them.
-  //        */
-  //       accessToken: crypto.randomBytes(18).toString('hex'),
-  //       expiresOn: moment().add(2, 'hours').toDate(),
-  //       /**
-  //        * Generate Permanent refresh Token for device uuid,
-  //        * Here we use Crypto to ensure randomness and make
-  //        * Collisions a near impossibility.
-  //        */
-  //       refreshToken: `${uuid}.${crypto.randomBytes(40).toString('hex')}`,
-  //       lastLogin: new Date(),
-  // }
-  // // Find User
-  // User.findOne({ facebookId: id }, (err, user) => {
-  //   if(err) return done(err)
-  //   // Create user if none found
-  //   if(!user) {
-  //     user = new User({
-  //       facebookId: id,
-  //       ...(birthday && birthday.length === 8 ? { birth: birthday } : null),
-  //       ...(first_name ? { name: first_name } : null),
-  //       ...(significant_other ? { significantOther: significant_other } : null),
-  //       profile: {
-  //         ...(gender ? { gender } : null),
-  //       },
-  //       devices: new Map<string, IUserDevice>([
-  //         [uuid, Object.assign({},
-  //           immutableDeviceValues,
-  //           mutableDeviceValues,
-  //         )]
-  //       ]),
-  //       searchSettings: {},
-  //     })
-  //     // sidewalk.warning('Creating FB User...')
-  //     User.create(user, (err, savedUser) => {
-  //       if(err || !savedUser) {
-  //         // sidewalk.error('ERROR: Could not create FB User')
-  //         return done(err)
-  //       }
-  //       // sidewalk.success('Created FB User')
-  //       return done(null, savedUser)
-  //     })
-  //   } else {
-  //     // check for device uuid, if none exists, create new one
-  //     const device = user.devices.get(uuid)
-  //     if(!device) {
-  //       user.devices.set(uuid, Object.assign({},
-  //         immutableDeviceValues,
-  //         mutableDeviceValues,
-  //       ))
-  //     } else { // Otherwise, edit the existing device
-  //       user.devices.set(uuid, Object.assign({},
-  //         immutableDeviceValues,
-  //         device,
-  //         mutableDeviceValues,
-  //       )) 
-  //     }
-  //     // sidewalk.warning('Saving FB User Login...')
-  //     const userObject = user.toObject()
-  //     user.save((err, savedUser) => {
-  //       if(err || !savedUser) {
-  //         // sidewalk.error('ERROR: Could not save FB User')
-  //         return done(err)
-  //       }
-  //       // sidewalk.success('Saved User')
-  //       return done(null, savedUser)
-  //     })
-  //   }
-  // })
-// }))
 
 /**
  * @method LocalStrategy
@@ -479,14 +371,14 @@ async (req: any, username, password, done) => {
 export function auth(req, res, next: () => any) {
   // sidewalk.warning(`Authenticating Passport for route: ${JSON.stringify(req.route)}`)
   // !req.isAuthenticated() && req.login()
-  console.log('authenticating request', JSON.stringify(req._passport))
+  // console.log('authenticating request', JSON.stringify(req.session))
   if(req.isAuthenticated()) {
-    console.log('authenticated')
+    // console.log('authenticated')
     // sidewalk.success('Passport Authentication Successful')
     return next()
   } else {
     // sidewalk.error('Could not Authenticate Passport')
-    console.log('not authenticated')
+    // console.log('not authenticated')
     // console.log()
     res.status(500).redirect('/')
   }
