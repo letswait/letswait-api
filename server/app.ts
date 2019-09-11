@@ -69,6 +69,7 @@ require('./library/email')
 let server: any
 import { ServerOptions } from 'https'
 const PORT = (process.env.PORT || 8080)
+console.log(process.env.PORT, PORT)
 // Setup HTTP Connections
 import httpolyglot = require('httpolyglot')
 if(process.env.NODE_ENV === 'development') {
