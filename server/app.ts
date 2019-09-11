@@ -10,9 +10,11 @@ import express = require('express')
 const app = express()
 
 app.use(function(req, res, next) {
-  if (!req.secure) {
+  if (req.protocol !== 'https') {
     sidewalk.detour('Redirecting Unsecure Connection to HTTP')
-    res.redirect(301, 'https://' + req.hostname + ':port' + req.originalUrl);
+    let redirect = 'https://' + req.hostname + ':port' + req.originalUrl
+    if(process.env.NODE_ENV === 'staging') redirect = 'https://' + req.hostname + req.originalUrl
+    res.redirect(301, redirect);
   } else {
     sidewalk.emphasize('Established Secure Connection to HTTPS')
     return next();
