@@ -16,7 +16,7 @@ app.use(function(req, res, next) {
     let redirect = 'https://' + req.hostname + ':' + (process.env.PORT || 8080) + req.originalUrl
     if(process.env.NODE_ENV === 'production') redirect = 'https://' + req.hostname + req.originalUrl
     res.redirect(301, redirect);
-  } else if(req.headers["X-Forwarded-Proto"] === 'https') {
+  } else if(req.headers["X-Forwarded-Proto"] === 'http') {
     let redirect = 'https://' + req.hostname + req.originalUrl
     res.redirect(301, redirect);
   } else {
