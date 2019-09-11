@@ -14,7 +14,10 @@ app.use(function(req, res, next) {
   if (req.protocol !== 'https') {
     sidewalk.detour('Redirecting Unsecure Connection to HTTP')
     let redirect = 'https://' + req.hostname + ':' + (process.env.PORT || 8080) + req.originalUrl
-    if(process.env.NODE_ENV === 'staging') redirect = 'https://' + req.hostname + req.originalUrl
+    if(process.env.NODE_ENV === 'production') redirect = 'https://' + req.hostname + req.originalUrl
+    res.redirect(301, redirect);
+  } else if(req.headers["X-Forwarded-Proto"] === 'https') {
+    let redirect = 'https://' + req.hostname + req.originalUrl
     res.redirect(301, redirect);
   } else {
     sidewalk.emphasize('Established Secure Connection to HTTPS')
