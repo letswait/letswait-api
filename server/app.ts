@@ -10,6 +10,7 @@ import express = require('express')
 const app = express()
 
 app.use(function(req, res, next) {
+  console.log(req.secure, req.protocol, req.hostname, req.originalUrl, process.env.NODE_ENV)
   if (!req.secure && process.env.NODE_ENV !== 'production') {
     sidewalk.detour('Redirecting Unsecure Connection to HTTP')
     res.redirect(301, 'https://' + req.hostname + ':port' + req.originalUrl);
