@@ -1,7 +1,7 @@
 import * as sendgrid from '@sendgrid/mail'
 import sidewalk from './sidewalk'
 
-sendgrid.setApiKey('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')
+sendgrid.setApiKey(process.env.SENDGRID_API_KEY)
 sidewalk.emphasize('Starting SendGrid Web API')
 
 export function sendTemplate(options: {

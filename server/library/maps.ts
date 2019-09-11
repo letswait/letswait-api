@@ -1,8 +1,7 @@
-import config from "../config"
 import sidewalk from './sidewalk'
 
 const googleMapsClient = require('@google/maps').createClient({
-  key: config.googleMapsKey,
+  key: process.env.GOOGLE_MAPS_KEY,
   Promise: Promise,
 });
 sidewalk.emphasize('starting Google Maps Services')

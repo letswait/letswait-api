@@ -5,8 +5,8 @@ import { Socket } from 'socket.io';
 import { IMessage, Reaction, IChat } from '../../types/match'
 
 const socketRouter = (socket: Socket) => {
-  var userId = socket.request.session.passport.user;
-
+  if(!socket.request.session || !socket.request.session.passport) return 
+  let userId = socket.request.session.passport.user;
   socket.on('joinchat', async (matchId: string) => {
     const match = await Match.findOne({ _id: matchId, userProfiles: userId })
     if(match) {

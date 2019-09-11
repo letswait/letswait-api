@@ -1,5 +1,4 @@
 import * as twilio from 'twilio'
-import config from '../config'
 import { User } from '../schemas'
 import { IUserDevice } from 'types/user';
 import { IUserModel } from 'schemas/user';
@@ -20,11 +19,11 @@ export default {
     } = device
     if(sms && activeCode && !codeValid) {
       // Create Twilio Instance
-      const client = twilio(config.twilioSID, config.twilioAuth)
+      const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH)
       client.messages.create({
         body: `Your Let's Wait verification code is ${activeCode}`,
         to: sms,
-        from: config.twilioNumbers[0],
+        from: process.env.TWILIO_NUMBERS.split(' ')[0],
       }).then((message: any) => {
         // sidewalk.success('Sent SMS Code to client')
         res.status('200').send({

@@ -1,9 +1,9 @@
 'use strict'
 
 require('module-alias/register')
+const dotenv = require('dotenv').config({ debug: true });
 
 import chalk from 'chalk'
-import config from './config'
 import sidewalk from './library/sidewalk'
 
 import * as mongoose from 'mongoose'
@@ -17,7 +17,7 @@ console.log(chalk.green(chalk.bgBlack('┆                                      
 console.log(chalk.green(chalk.bgBlack('╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄╯')))
 
 sidewalk.warning('Establishing connection to database')
-mongoose.connect(config.mongo, {
+mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useFindAndModify: false,
   useCreateIndex: true,

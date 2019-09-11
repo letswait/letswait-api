@@ -29,31 +29,31 @@ api.get('/facebook-auth', (req, res) => {
 api.get('/facebook-auth/callback', passport.authenticate('facebook', { failureRedirect: '/' }), 
   function(req, res) {
     const {
-      registered,
       birth,
       name,
       profile,
       searchSettings,
+      registered,
     } = req.user
-    // console.log('Got User: ', name, birth, registered)
-    // console.log('Showing Session: ', req.session)
-    sidewalk.success('Facebook Passport Login')
-    if(registered) {
-      // sidewalk.success(`User Registered: Sending to app...`)
-      res.status(200).send({ accepted: true, user: req.user })
-    } else {
-      // sidewalk.detour(`User not registered, Sending Setup Routes...`)
-
-      res.redirect(307, `letswaitdating://app?routes=${JSON.stringify([
-        ...(birth ? [] : ['/setup/birthdate']),
-        ...(name ? [] : ['/setup/name']),
-        ...(profile && profile.gender ? [] : ['/setup/gender']),
-        ...(searchSettings && searchSettings.sexualPreference ? [] : ['/setup/sexual-preference']),
-        ...(profile && profile.images.length ? [] : ['/setup/photo-upload']),
-        ...(profile && profile.food.length ? [] : ['/setup/food-interests']),
-        ...(profile && profile.goal ? [] : ['/setup/goals']),
-      ])}`)
-    }
+  const isRegistered = !!registered
+  delete req.user.registered
+  if(isRegistered) {
+    // sidewalk.warning(`User Registered: Sending to app`)
+    res.redirect(`letswaitdating://app?user=${JSON.stringify(req.user)}`)
+    // res.status(200).send({ accepted: true, user: req.user })
+  } else {
+    // sidewalk.warning(`User not registered, Sending Setup Routes`)
+    const remainingSetupRoutes = [
+      ...(birth ? [] : ['/setup/birthdate']),
+      ...(name ? [] : ['/setup/name']),
+      ...(profile && profile.gender ? [] : ['/setup/gender']),
+      ...(searchSettings && searchSettings.sexualPreference ? [] : ['/setup/sexual-preference']),
+      ...(profile && profile.images.length ? [] : ['/setup/photo-upload']),
+      ...(profile && profile.food.length ? [] : ['/setup/food-interests']),
+      ...(profile && profile.goal ? [] : ['/setup/goals']),
+    ]
+    res.redirect(`letswaitdating://app?routes=${JSON.stringify(remainingSetupRoutes)}`)
+  }
   }
 )
 

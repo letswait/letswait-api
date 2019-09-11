@@ -27,7 +27,10 @@ export let UserSchema = new Schema({
   name: String,
   birth: Date,
   facebookId: String,
+  fbAccessToken: String,
+  fbRefreshToken: String,
   significantOther: String,
+  queuedSignificantOther: String, // In the case that for a Facebook account between logins there has been a marriage that went sour or something. queueing the data allows us to non-destructively make the change and ask questions.
   sms: String,
   smsVerified: Boolean,
   created: { type: Date, default: Date.now() },
