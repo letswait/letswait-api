@@ -21,6 +21,7 @@
       "server/**/*.ts"
   ],
   "exclude": [
+      "public",
       "node_modules"
   ]
 }
