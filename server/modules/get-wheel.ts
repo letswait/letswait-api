@@ -71,7 +71,7 @@ export async function createWheel(match: any, userId: any, candidateProfile?: an
           'Livery - Indianapolis'
         ]
         const v = await Venue.find({ name: { $in: cunninghamVenues }})
-        venue = v[Math.min(v.length - 1, Math.floor(Math.random() * venues.length))]
+        venue = v[Math.min(v.length - 1, Math.floor(Math.random() * v.length))]
         console.log('retrieved venue... ', venue.name)
       } else {
         venue = await Venue.findOne(query)
