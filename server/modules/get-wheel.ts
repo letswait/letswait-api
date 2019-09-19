@@ -56,13 +56,13 @@ export async function createWheel(match: any, userId: any, candidateProfile?: an
     let chosenSegment = Math.min(Math.floor(Math.random() * 12), 11)
     if(user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40') {
       console.log('special match found, ', user._id)
-      chosenSegment = 0
+      chosenSegment = 1
     }
     let segments = new Array(12).fill(undefined)
-    const foodCats = ['AMERICAN','SUSHI','MUSIC','CHINESE','JAPANESE','PIZZA','COFFEE','MEXICAN','MOVIES','OUTDOOR','ITALIAN','COMEDY']
+    const foodCats = ['SUSHI','AMERICAN','MUSIC','CHINESE','JAPANESE','PIZZA','COFFEE','MEXICAN','MOVIES','OUTDOOR','ITALIAN','COMEDY']
     for (let i = segments.length; i--;) {
       let venue
-      if(user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40') {
+      if(i === chosenSegment && (user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40')) {
         console.log(':: Assigning Venue to Special Match')
         const cunninghamVenues = [
           'Stone Creek - Noblesville',
