@@ -6,21 +6,22 @@ import { IWheel, IWheelSegment } from '../types/';
 
 import discoverVenues from '../library/discoverVenues'
 
-export default async function (req, res) {
-  Match.findOne({ '_id': req.query.matchId }, async (err, match) => {
-    if (err || !match) res.status(500).send()
-    const wheel = await createWheel(match)
-    if (wheel) {
-      res.status(200).send(wheel)
-    } else {
-      res.status(500).send()
-    }
-  })
-}
+// export default async function (req, res) {
+//   Match.findOne({ '_id': req.query.matchId }, async (err, match) => {
+//     if (err || !match) res.status(500).send()
+//     const wheel = await createWheel(match)
+//     if (wheel) {
+//       res.status(200).send(wheel)
+//     } else {
+//       res.status(500).send()
+//     }
+//   })
+// }
 
 // I dont know if this works yet, caution should be taken when using it.
 // its fairly complex and will grow in complexity as more filters are added
-export async function createWheel(match: any) {
+export async function createWheel(match: any, userId: any, candidateProfile?: any) {
+  let user = await User.findById(userId)
   let query: any = {
     'campaigns.0': { $exists: true },
     location: undefined
@@ -52,14 +53,29 @@ export async function createWheel(match: any) {
       venueCount = venueCount + val
     }
     let foundSegments = 0
-    const chosenSegment = Math.min(Math.floor(Math.random() * 12), 7)
+    let chosenSegment = Math.min(Math.floor(Math.random() * 12), 11)
+    if(user._id.toString() === '5d3e2cf89c327400171dd125') {
+      chosenSegment = 1
+    }
     let segments = new Array(12).fill(undefined)
+    const foodCats = ['AMERICAN','SUSHI','MUSIC','CHINESE','JAPANESE','PIZZA','COFFEE','MEXICAN','MOVIES','OUTDOOR','ITALIAN','COMEDY']
     for (let i = segments.length; i--;) {
-      const venue = await Venue.findOne(query)
+      let venue
+      if(user._id.toString() === '5d3e2cf89c327400171dd125') {
+        const cunninghamVenues = [
+          'Stone Creek - Noblesville',
+          'Bru Burger Bar',
+          'Union 50',
+          'Livery - Indianapolis'
+        ]
+        const venues = await Venue.find({ name: { $in: cunninghamVenues }}).lean()
+        venue = Object.assign({}, (venues[Math.min(venues.length - 1, Math.floor(Math.random() * venues.length))]))
+      } else {
+        venue = await Venue.findOne(query)
         .skip(Math.floor(Math.random() * 20))
+      }
       if (venue) {
         foundSegments++
-        const foodCats = ['AMERICAN','SUSHI','MUSIC','CHINESE','JAPANESE','PIZZA','COFFEE','MEXICAN','MOVIES','OUTDOOR','ITALIAN','COMEDY']
         segments[i] = {
           logo: venue.logo,
           label: foodCats[i],

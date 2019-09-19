@@ -26,7 +26,7 @@ export default async function(req, res) {
         // Switch match to matched
         match.state = 'matched'
         updateMatch()
-        const wheel = await createWheel(match)
+        const wheel = await createWheel(match, req.user._id)
         res.status(200).send({
           match,
           continue: false,
