@@ -54,22 +54,25 @@ export async function createWheel(match: any, userId: any, candidateProfile?: an
     }
     let foundSegments = 0
     let chosenSegment = Math.min(Math.floor(Math.random() * 12), 11)
-    if(user._id.toString() === '5d3e2cf89c327400171dd125') {
-      chosenSegment = 1
+    if(user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40') {
+      console.log('special match found, ', user._id)
+      chosenSegment = 0
     }
     let segments = new Array(12).fill(undefined)
     const foodCats = ['AMERICAN','SUSHI','MUSIC','CHINESE','JAPANESE','PIZZA','COFFEE','MEXICAN','MOVIES','OUTDOOR','ITALIAN','COMEDY']
     for (let i = segments.length; i--;) {
       let venue
-      if(user._id.toString() === '5d3e2cf89c327400171dd125') {
+      if(user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40') {
+        console.log(':: Assigning Venue to Special Match')
         const cunninghamVenues = [
           'Stone Creek - Noblesville',
           'Bru Burger Bar',
           'Union 50',
           'Livery - Indianapolis'
         ]
-        const venues = await Venue.find({ name: { $in: cunninghamVenues }}).lean()
-        venue = Object.assign({}, (venues[Math.min(venues.length - 1, Math.floor(Math.random() * venues.length))]))
+        const v = await Venue.find({ name: { $in: cunninghamVenues }})
+        venue = v[Math.min(v.length - 1, Math.floor(Math.random() * venues.length))]
+        console.log('retrieved venue... ', venue.name)
       } else {
         venue = await Venue.findOne(query)
         .skip(Math.floor(Math.random() * 20))
