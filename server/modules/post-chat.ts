@@ -1,6 +1,7 @@
 import { Match, User, Venue } from '../schemas'
 import moment = require('moment')
 import { Point } from '../types'
+import { IMatchModel } from 'Schemas/match'
 
 interface messageRequest {
   text: string
@@ -33,7 +34,7 @@ export default async function(req, res) {
   res.status(500).send()
 }
 
-export async function postLocation(matchId, user, message): Promise<any | undefined> {
+export async function postLocation(matchId, user, message): Promise<IMatchModel | undefined> {
   const match = await Match.updateOne(
     { _id: matchId },
     { $push: { chat: {
