@@ -7,22 +7,23 @@ import { IWheel } from '../types/index'
 import { postLocation } from './post-chat';
 
 export default function (req, res) {
-  const { wheel, message, matchId }:
-    { wheel: IWheel, message: string | undefined, matchId: string} = req.body
-  if(!matchId) res.status(500).send()
-  const msg = message && message.length ? message : ''
+  const { wheel, matchId }:
+    { wheel: IWheel, matchId: string} = req.body
+  console.log(req.body)
+  if(!matchId) return res.status(500).send()
   const segment = wheel.segments[wheel.chosenSegment]
-  if(!segment.campaignId || !segment.venueId) res.status(500).send()
+  if(!segment.campaignId || !segment.venueId) return res.status(500).send()
   // Verify Venue / Campaign exists
+  console.log('finding venue')
   Venue.findOne({
     "_id": segment.venueId,
   }, (err, venue) => {
-    if(err || !venue) res.status(500).send()
-
+    if(err || !venue) return res.status(500).send()
+    console.log('updating match?')
     Match.findOneAndUpdate(
       { _id: matchId },
       {
-        $addToSet: {
+        $push: {
           dates: {
             venue: venue._id,
             logo: venue.logo,
@@ -39,15 +40,16 @@ export default function (req, res) {
         new: true,
       },
       async (er, match) => {
-        if(er || !match) res.status(500).send()
+        console.log('got match?', er, match)
+        if(er || !match) return res.status(500).send()
         const processedMatch = await postLocation(match._id, req.user._id, {
-          text: msg,
+          text: '',
           location: venue.location,
           campaignId: segment.campaignId
         })
         console.log('processed match: ', processedMatch)
-        if(processedMatch) res.status(200).send({ match: processedMatch })
-        else res.status(500).send()
+        if(processedMatch) return res.status(200).send({ match: processedMatch })
+        res.status(500).send()
       }
     )
   })
