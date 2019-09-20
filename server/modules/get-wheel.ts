@@ -59,7 +59,7 @@ export async function createWheel(match: any, userId: any, candidateProfile?: an
       chosenSegment = 1
     }
     let segments = new Array(12).fill(undefined)
-    const foodCats = ['SUSHI','AMERICAN','MUSIC','CHINESE','JAPANESE','PIZZA','COFFEE','MEXICAN','MOVIES','OUTDOOR','ITALIAN','COMEDY']
+    const foodCats = ['SUSHI','COMEDY','PIZZA','CHINESE','JAPANESE','MUSIC','COFFEE','MEXICAN','MOVIES','OUTDOOR','ITALIAN','AMERICAN']
     for (let i = segments.length; i--;) {
       let venue
       if(i === chosenSegment && (user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40')) {
