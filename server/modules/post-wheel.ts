@@ -45,6 +45,7 @@ export default function (req, res) {
           location: venue.location,
           campaignId: segment.campaignId
         })
+        console.log('processed match: ', processedMatch.dates[0].label)
         if(processedMatch) res.status(200).send({ match: processedMatch })
         else res.status(500).send()
       }
