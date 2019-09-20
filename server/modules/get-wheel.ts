@@ -65,7 +65,6 @@ export async function createWheel(match: any, userId: any, candidateProfile?: an
       if(i === chosenSegment && (user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40')) {
         console.log(':: Assigning Venue to Special Match')
         const cunninghamVenues = [
-          'Stone Creek - Noblesville',
           'Bru Burger Bar',
           'Union 50',
           'Livery - Indianapolis'
