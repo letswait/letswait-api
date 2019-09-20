@@ -46,7 +46,7 @@ export default function (req, res) {
           campaignId: segment.campaignId
         })
         if(processedMatch) res.status(200).send({ match: processedMatch })
-        else res.staus(500).send()
+        else res.status(500).send()
       }
     )
   })
