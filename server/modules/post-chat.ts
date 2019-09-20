@@ -35,7 +35,7 @@ export default async function(req, res) {
 }
 
 export async function postLocation(matchId, user, message): Promise<IMatchModel | undefined> {
-  return Match.updateOne(
+  return Match.findOneAndUpdate(
     { _id: matchId },
     { $push: { chat: {
       user,
