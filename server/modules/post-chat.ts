@@ -45,10 +45,7 @@ export async function postLocation(matchId, user, message): Promise<IMatchModel 
       }
     }}},
     { new: true },
-  ).lean().exec((err, match) => {
-    console.log('POSTING LOCATION:', match)
-    return match || undefined
-  })
+  ).lean().exec()
 }
 export async function postText(matchId, user, message) {
   const match = await Match.findByIdAndUpdate(
