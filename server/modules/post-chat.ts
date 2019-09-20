@@ -33,7 +33,7 @@ export default async function(req, res) {
   res.status(500).send()
 }
 
-export async function postLocation(matchId, user, message): Promise<boolean> {
+export async function postLocation(matchId, user, message): Promise<any | undefined> {
   const match = await Match.updateOne(
     { _id: matchId },
     { $push: { chat: {
@@ -45,8 +45,7 @@ export async function postLocation(matchId, user, message): Promise<boolean> {
     }}},
     { new: true },
   )
-  if(match) return true
-  return false
+  return match || undefined
 }
 export async function postText(matchId, user, message) {
   const match = await Match.findByIdAndUpdate(

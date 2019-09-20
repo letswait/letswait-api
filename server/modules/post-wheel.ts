@@ -18,29 +18,37 @@ export default function (req, res) {
     "_id": segment.venueId,
   }, (err, venue) => {
     if(err || !venue) res.status(500).send()
-    Match.findById(matchId, async (er, match) => {
-      if(er || !match) res.status(500).send()
-      match.dates = match.dates.concat([{
-        venue: venue._id,
-        logo: venue.logo,
-        name: venue.name,
-        campaignId: segment.campaignId,
-        location: venue.location,
-        expiresOn: moment().add(7, 'days').toDate(),
-        code: segment.code,
-        consumed: false,
-      }])
-      await Match.findOneAndUpdate({ _id: match._id }, match)
-      const didPostChat = await postLocation(match._id, req.user._id, {
-        text: msg,
-        location: venue.location,
-        campaignId: segment.campaignId
-      })
-      if(didPostChat) res.status(200).send({ matchId: match._id })
-      else {
-        res.staus(500).send()
+
+    Match.findOneAndUpdate(
+      { _id: matchId },
+      {
+        $addToSet: {
+          dates: {
+            venue: venue._id,
+            logo: venue.logo,
+            name: venue.name,
+            location: venue.location,
+            campaignId: segment.campaignId,
+            expiresOn: moment().add(7, 'days').toDate(),
+            code: segment.code,
+            consumed: false,
+          }
+        }
+      },
+      {
+        new: true,
+      },
+      async (er, match) => {
+        if(er || !match) res.status(500).send()
+        const processedMatch = await postLocation(match._id, req.user._id, {
+          text: msg,
+          location: venue.location,
+          campaignId: segment.campaignId
+        })
+        if(processedMatch) res.status(200).send({ match: processedMatch.toJSON() })
+        else res.staus(500).send()
       }
-    })
+    )
   })
 
 }
