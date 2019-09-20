@@ -45,7 +45,19 @@ export async function postLocation(matchId, user, message): Promise<IMatchModel 
       }
     }}},
     { new: true },
-  ).lean().exec()
+  ).populate({
+    path: 'userProfiles',
+    select: `
+      name
+      birth
+      age
+      profile
+      isBot
+      botBehavior
+    `,
+    match: { _id: { $ne: user }},
+    options: { lean: true }
+  }).lean().exec()
 }
 export async function postText(matchId, user, message) {
   const match = await Match.findByIdAndUpdate(
