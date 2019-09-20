@@ -45,7 +45,7 @@ export default function (req, res) {
           location: venue.location,
           campaignId: segment.campaignId
         })
-        if(processedMatch) res.status(200).send({ match: processedMatch.toJSON() })
+        if(processedMatch) res.status(200).send({ match: processedMatch })
         else res.staus(500).send()
       }
     )

@@ -35,7 +35,7 @@ export default async function(req, res) {
 }
 
 export async function postLocation(matchId, user, message): Promise<IMatchModel | undefined> {
-  const match = await Match.updateOne(
+  return Match.updateOne(
     { _id: matchId },
     { $push: { chat: {
       user,
@@ -45,8 +45,10 @@ export async function postLocation(matchId, user, message): Promise<IMatchModel 
       }
     }}},
     { new: true },
-  )
-  return match || undefined
+  ).lean().exec((err, match) => {
+    console.log('POSTING LOCATION:', match)
+    return match || undefined
+  })
 }
 export async function postText(matchId, user, message) {
   const match = await Match.findByIdAndUpdate(
