@@ -8,10 +8,7 @@ export default async function(req, res) {
   try {
     // Get Match, find Users
     const { matchId, action } = req.body
-    const match = await Match.findOne({ _id: matchId }).populate({
-      path: 'userProfiles',
-      // options: { lean: true }
-    })
+    const match = await Match.findOne({ _id: matchId })
     const userKeys = Array.from(match.users.keys())
     const userId = req.user._id.toString()
     const candidateId = userKeys[0] === userId ? userKeys[1] : userKeys[0]
@@ -26,21 +23,21 @@ export default async function(req, res) {
         // Switch match to matched
         match.state = 'matched'
         updateMatch()
-        const wheel = await createWheel(match, req.user._id)
+        // const wheel = await createWheel(match, req.user._id)
         res.status(200).send({
           match,
           continue: false,
-          wheel
+          // wheel
         })
       } else if(candidateAction === 'queued') {
         // Switch to Queued in case it was a backtrace + swipe right
         // Takes it out of 'suspend' designation
         const candidate = await User.findById(candidateId)
-        const matchState = await candidate.hasMatchWith(userId)
-        if(!matchState) {
-          //Match Does Not Exist. Create Reference
-          await User.updateOne({ _id: candidateId }, { $push: { matches: match._id }})
-        }
+        // const matchState = await candidate.hasMatchWith(userId)
+        // if(!matchState) {
+        //   //Match Does Not Exist. Create Reference
+        //   await User.updateOne({ _id: candidateId }, { $push: { matches: match._id }})
+        // }
         match.state = 'queued'
         updateMatch()
         // SNS Notify Candidate
