@@ -1,55 +1,69 @@
 import { Venue, Match, User } from '../schemas'
-import { IVenueModel } from '../schemas/venue'
-import { IMatchModel } from '../schemas/match'
-import { coordinateMidpoint } from '../library/maps'
 import { IWheel, IWheelSegment } from '../types/';
+import * as mongoose from 'mongoose'
 
 import discoverVenues from '../library/discoverVenues'
 
-// export default async function (req, res) {
-//   Match.findOne({ '_id': req.query.matchId }, async (err, match) => {
-//     if (err || !match) res.status(500).send()
-//     const wheel = await createWheel(match)
-//     if (wheel) {
-//       res.status(200).send(wheel)
-//     } else {
-//       res.status(500).send()
-//     }
-//   })
-// }
+// (async () => {
+
+//   const point = [39.776734, -86.145695]
+//   console.log(`discovering venues around ${point}`)
+//   const foundVenueCount = await discoverVenues(point, 500);
+//   console.log(`found ${foundVenueCount} venue${foundVenueCount > 1 ? 's' : ''}`)
+//   console.log('naming all venues!')
+//   const venues = await Venue.find({}).lean()
+//   const venueNames = venues.map(element => element.name).sort()
+//   venueNames.forEach(element => console.log(element))
+//   // venues.forEach(element => {
+//   //   console.log(element.name)
+//   // });
+// })()
+
+export default async function (req, res) {
+  // Match.findOne({ '_id': req.query.matchId }, async (err, match) => {
+  //   if (err || !match) res.status(500).send()
+  //   const wheel = await createWheel(match)
+  //   if (wheel) {
+  //     res.status(200).send(wheel)
+  //   } else {
+  //     res.status(500).send()
+  //   }
+  // })
+}
 
 // I dont know if this works yet, caution should be taken when using it.
 // its fairly complex and will grow in complexity as more filters are added
-export async function createWheel(match: any, userId: any, candidateProfile?: any) {
-  let user = await User.findById(userId)
+export async function createWheel(match: any, userId: mongoose.Types.ObjectId, candidateProfile: any) {
   let query: any = {
     'campaigns.0': { $exists: true },
     location: undefined
   }
-  const users = await User.find(
-    { '_id': { $in: [match.userProfiles[0]._id, match.userProfiles[1]._id] } },
-  )
+  const user = await User.findById(userId)
+
+  // const users = await User.find(
+  //   { '_id': { $in: [match.userProfiles[0]._id, match.userProfiles[1]._id] } },
+  // )
   let wheel: IWheel
-  if (users && users.length) {
+  if (user) {
     query.location = {
       $near: {
         $geometry: {
           type: 'Point',
           coordinates: [
-            users[0].lastLocation.coordinates[0],
-            users[0].lastLocation.coordinates[1]],
+            user.lastLocation.coordinates[0],
+            user.lastLocation.coordinates[1]],
         },
         $maxDistance: 500000,
       }
     }
-    if (Math.min(users[0].age, users[1].age) < 21) {
-      query.restrictMinors = false
+    if (Math.min(user.age, candidateProfile.age) < 21) {
+      query.restrictMinors = true
     }
     const venues = await Venue.find(query)
     const count = venues.length
     let venueCount = count
     if (venueCount < 12) {
-      const val = await discoverVenues([users[0].lastLocation[1], users[0].lastLocation[0]])
+      const val = await discoverVenues([user.lastLocation[1], user.lastLocation[0]])
       venueCount = venueCount + val
     }
     let foundSegments = 0
