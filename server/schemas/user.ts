@@ -16,7 +16,7 @@ import { pointSchema, deviceSchema } from './subdocs'
 export interface IUser extends IUserDocument {
   setupCompleted: boolean,
   age: number,
-  hasMatchWith(candidateId: string): string | undefined; 
+  // hasMatchWith(candidateId: string): string | undefined; 
 }
 
 export interface IUserModel extends Model<IUser> {
@@ -129,21 +129,5 @@ UserSchema.virtual('age').get(function() {
   if(birth.isValid()) return Math.abs(birth.diff(moment(), 'years'))
   return undefined
 })
-
-UserSchema.methods.hasMatchWith = async function(candidateId: string) {
-  await this.populate({
-    path: 'matches',
-    match: {
-      userProfiles: Types.ObjectId(candidateId)
-    },
-  }, function (err, user) {
-    // console.log('Got Populated MAtches', err, user)
-    if(err || !user) return undefined
-    // console.log(user.matches)
-    const { matches } = user
-    if(matches && matches[0]) return matches[0].state
-    return undefined
-  })
-}
 
 export const User: IUserModel = model<IUser, IUserModel>('User', UserSchema)

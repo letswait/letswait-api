@@ -21,9 +21,9 @@ export let MatchSchema = new Schema({
     readTimestamp: Date,
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     message: {
-      text: { type: String, required: true },
-      images: String,
-      cloudfront: String,
+      text: String,
+      image: String,
+      video: String,
       location: {
         type: pointSchema,
         required: false,
@@ -34,12 +34,6 @@ export let MatchSchema = new Schema({
   }],
   dates: [{
     venue: { type: Schema.Types.ObjectId, ref: 'Venue'},
-    logo: String,
-    name: String,
-    location: {
-      type: pointSchema,
-      required: true,
-    },
     campaignId: String,
     expiresOn: { type: Date, default: moment().add(7, 'days').toDate() },
     code: String,

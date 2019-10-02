@@ -3,9 +3,10 @@ import sidewalk from '../library/sidewalk';
 
 export default function(req, res) {
   // Find User with existing device UUID
-  if(!req.body.token || !req.body.os) {
+  if(!req.body.token || !req.headers.os) {
     res.status(500).send({ accepted: false})
   } else {
+    console.log('registering user for remote push notifications')
     User.findOneAndUpdate(
       {
         _id: req.user._id,
@@ -14,7 +15,7 @@ export default function(req, res) {
       {
         $set: {
           'devices.$.token': req.body.token,
-          'devices.$.os': req.body.os,
+          'devices.$.os': req.headers.os,
         },
       },
       {
@@ -26,7 +27,6 @@ export default function(req, res) {
           res.status(500).send(err ? { accepted: false, message: err} : null)
         } else {
           res.status(200).send({ accepted: true })
-  
         }
       }
     )

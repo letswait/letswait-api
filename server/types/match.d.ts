@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose'
 import { ObjectOf, Point } from '../types'
 
 export interface IMatch {
+  _id: any,
   timestamp?: Date,
   users: Map<string, UserMatched> // key/value pair with user _id and UserMatched enum
   chat: IChat[]
@@ -11,6 +12,7 @@ export interface IMatch {
 }
 
 export interface IChat {
+  _id?: string,
   sentTimestamp: Date
   readTimestamp?: Date
   user: string
@@ -19,9 +21,9 @@ export interface IChat {
 }
 
 export interface IMessage {
-  text: string
+  text?: string
   image?: string
-  cloudfront?: string
+  video?: string
   location?: Point
   campaignId?: String
 }
@@ -44,9 +46,6 @@ export type UserMatched =
 
 export interface IDate {
   venue: mongoose.Schema.Types.ObjectId
-  logo: string,
-  name: string,
-  location: Point
   campaignId: string,
   expiresOn: Date,
   code: string,

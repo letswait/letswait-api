@@ -2,6 +2,7 @@
 import path = require('path')
 import fs = require('fs')
 import sidewalk from './library/sidewalk'
+import * as ReactDOMServer from 'react-dom/server'
 
 import moment = require('moment')
 
@@ -22,7 +23,7 @@ app.use(function(req, res, next) {
   }
 });
 
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, '../public')))
 
 import cookieParser = require('cookie-parser')
 import * as bodyparser from 'body-parser'
@@ -56,6 +57,7 @@ app
 import './pass'
 
 // Routes
+// const App = require('../public/js/main')
 import api_routes from './routes/api/'
 app.use('/api/user', api_routes.user)
 app.use('/api/upload', api_routes.upload)
@@ -63,8 +65,23 @@ app.use("/api/profile", api_routes.profile)
 app.use('/api/matches', api_routes.match)
 app.use('/api/dates', api_routes.date)
 app.use('/api/feed', api_routes.feed)
+app.use('/api/admin', api_routes.admin)
 app.use('/api', api_routes.api)
-/// app.use("/api/admin", api_routes.admin)
+// app.get('/*', (req, res) => {
+//   const app = ReactDOMServer.renderToString(App);
+
+//   const indexFile = path.resolve('../public/index.html');
+//   fs.readFile(indexFile, 'utf8', (err, data) => {
+//     if (err) {
+//       console.error('Something went wrong:', err);
+//       return res.status(500).send('Oops, better luck next time!');
+//     }
+
+//     return res.send(
+//       data.replace('<div id="root"></div>', `<div id="root">${app}</div>`)
+//     );
+//   });
+// });
 
 // Setup Services
 require('./library/email')
@@ -104,3 +121,29 @@ import socketRouter from './routes/sockets/index'
 io.on("connection", socketRouter);
 
 export default app
+
+import { Request as IRequest, Response as IResponse } from 'request'
+import { IUser } from './schemas/user'
+
+import { Request, Response } from 'express'
+
+declare global {
+  namespace Express {
+    export interface User extends IUser {}
+    export interface Request extends Omit<IRequest, 'user'> {
+      // originalMethod?: string;
+      body: any
+      headers: {
+        uuid?: string
+        os?: 'ios' | 'android' | 'other'
+        authToken?: string
+        refreshToken?: string
+        [propName: string]: any
+      }
+    }
+    export interface Response extends IResponse {
+      status?: (number) => any
+      redirect?: (string) => any 
+    }
+  }
+}

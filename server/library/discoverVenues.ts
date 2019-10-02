@@ -15,6 +15,7 @@ export default async function discoverVenues(location: number[], radius?: number
   }).asPromise()
   .then((response: any) => returnResults(response))
   .catch((err: any) => console.log('There was an error: ', err))
+  console.log('currentDiscoveredVenues:', discoveredVenues)
 
   function returnResults(response) {
     if(response && response.json) {
@@ -28,10 +29,11 @@ export default async function discoverVenues(location: number[], radius?: number
       return results || []
     }
   }
-
-  while(continueSearch) {
+  let attempts = 2
+  while(continueSearch && attempts) {
+    attempts--
     const newAdditions = await googleMapsClient.placesNearby({
-      pagetoken: nextPageToken
+      pagetoken: nextPageToken,
     }).asPromise()
       .then((response) => returnResults(response))
       .catch(err => console.log('There was an error: ', err))

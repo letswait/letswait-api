@@ -33,7 +33,7 @@ export default async function (req, res) {
 
 // I dont know if this works yet, caution should be taken when using it.
 // its fairly complex and will grow in complexity as more filters are added
-export async function createWheel(match: any, userId: mongoose.Types.ObjectId, candidateProfile: any) {
+export async function createWheel(match: any, userId: mongoose.Types.ObjectId, matchProfile: any) {
   let query: any = {
     'campaigns.0': { $exists: true },
     location: undefined
@@ -56,7 +56,7 @@ export async function createWheel(match: any, userId: mongoose.Types.ObjectId, c
         $maxDistance: 500000,
       }
     }
-    if (Math.min(user.age, candidateProfile.age) < 21) {
+    if (Math.min(user.age, matchProfile.age) < 21) {
       query.restrictMinors = true
     }
     const venues = await Venue.find(query)
@@ -79,6 +79,7 @@ export async function createWheel(match: any, userId: mongoose.Types.ObjectId, c
       if(i === chosenSegment && (user._id.toString() === '5d3e2cf89c327400171dd125' || user._id.toString() === '5d812acecb5c04abdae80a40')) {
         console.log(':: Assigning Venue to Special Match')
         const cunninghamVenues = [
+          'Stone Creek - Noblesville',
           'Bru Burger Bar',
           'Union 50',
           'Livery - Indianapolis'

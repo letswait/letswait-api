@@ -1,7 +1,7 @@
 'use strict'
 
 require('module-alias/register')
-const dotenv = require('dotenv').config({ debug: true });
+const dotenv = require('dotenv').config();
 
 import chalk from 'chalk'
 import sidewalk from './library/sidewalk'

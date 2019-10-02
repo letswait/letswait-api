@@ -48,11 +48,8 @@ const createForm = (
   })
   form.on('file', (name: string, file: formidable.File) => {
     fileCount++
-    // // console.log(file)
     if(file.hasOwnProperty('path')) {
-      console.log('Upload Module Data: ', file, name)
       fs.readFile(`${file.path}`, (err: NodeJS.ErrnoException, data: Buffer) => {
-        // console.log(`${file.path}`, err, data, 'SHARPENING IMAGES')
         const location = sharp(data)
         .jpeg({
           quality: 100,
@@ -60,8 +57,6 @@ const createForm = (
         })
         .toBuffer()
         .then(async (data) => {
-          console.log(data, 'IMAGE SHARPENED')
-          console.log('uploading to s3 now')
           const newLocation = await uploadPhoto(data, file, uploadDirectory, res, file.type as any)
           locations = locations.concat([newLocation])
         })

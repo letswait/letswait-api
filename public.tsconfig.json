@@ -1,15 +1,24 @@
 {
   "compilerOptions": {
-      "outDir": "./public/dist/",
-      "sourceMap": true,
-      "noImplicitAny": true,
-      "module": "commonjs",
-      "target": "es6",
-      "jsx": "react",
-      "moduleResolution": "node",
-      "baseUrl": "./public/src/"
+    "jsx": "react",
+    "lib": ["es6","dom"],
+    "rootDir": "src",
+    "outDir": "public/js",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "target": "es5",
+    "moduleResolution": "node",
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true
   },
   "include": [
-      "public/src/**/*"
+    "./src"
+  ],
+  "exclude": [
+    "./node_modules",
+    "./server",
+    "./public"
   ]
 }

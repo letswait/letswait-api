@@ -2,12 +2,9 @@ import { User } from '../schemas'
 import { IUserModel } from 'schemas/user'
 import sidewalk from '../library/sidewalk'
 
-export default function (req, res) {
-  // sidewalk.warning('Changing User Profile')
-  User.findById(req.user._id, (err, user) => {
-    if(err || !user) res.status(500).send()
-    // sidewalk.success('found user', user)
+export default function (req: Express.Request, res: Express.Response) {
     const changes = req.body
+    const { user } = req
     user.profile.gender = changes.gender || user.profile.gender
     user.searchSettings.sexualPreference = ((): 'male' | 'female' | 'everyone' => {
       if(changes.sexualPreference) {
@@ -47,8 +44,7 @@ export default function (req, res) {
         res.status(500).send()
       } else {
         // sidewalk.success('Saved User Changes')
-        res.status(200).send({ accepted: true })
+        res.status(200).send()
       }
     })
-  })
 }

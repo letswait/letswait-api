@@ -10,19 +10,47 @@ import moment = require('moment');
 import sidewalk from './library/sidewalk'
 
 import { alertText } from './library/email'
+import { IUser } from 'Schemas/user';
 
 passport.serializeUser(function(user: any, done) {
   // console.log('serialize User: ', user)
+  typeof user
   return done(null, user._id)
 });
- 
-passport.deserializeUser(function(id, done) {
-  // console.log('deserialize User: ', id)
-  User.findById(id, function (err, user) {
-    if(err) return done(err)
+
+passport.deserializeUser(async function(req, id, done): Promise<IUser> {
+  try {
+    let user: IUser
+    switch(req.path) {
+      case '/api/matches/get-matches': 
+        user = await User.findById(id).populate({
+          path: 'matches',
+          match: { state: 'matched' },
+          options: { lean: true },
+          populate: {
+            path: 'userProfiles',
+            select: `
+              name
+              birth
+              age
+              profile
+              isBot
+              botBehavior
+            `,
+            match: { _id: { $ne: id }},
+            options: { lean: true }
+          }
+        }).exec()
+        break;
+      default: user = await User.findById(id).exec()
+    }
+    if(!user) throw 'user not found'
     return done(null, user);
-  });
-});
+  } catch(e) {
+    console.log(e)
+    return done(e)
+  }
+} as any);
 
 /**
  * @todo Add UUID Query to request clientside. needs to get access to FAcebook Login First Though
@@ -33,6 +61,7 @@ passport.use(new FacebookStrategy({
   callbackURL: process.env.FACEBOOK_CALLBACK_URL,
   profileFields: ['id', 'first_name', 'gender', 'age_range', 'birthday', 'significant_other'],
   passReqToCallback: true,
+  enableProof: true,
 },
 async (req: any, fbAccessToken, fbRefreshToken, profile: Profile | any, done) => {
   // Check for UUID
@@ -47,7 +76,6 @@ async (req: any, fbAccessToken, fbRefreshToken, profile: Profile | any, done) =>
   const codeValid = true
   const lastLogin = new Date()
 
-  console.log(profile)
   let user = await User.findOneAndUpdate(
     {
       facebookId: profile.id,
@@ -215,8 +243,10 @@ async (req: any, fbAccessToken, fbRefreshToken, profile: Profile | any, done) =>
   ).exec()
 
   if(!user) return done('couldnt find user')
+  
+  return done(null, processUser(user))
 
-  function processUser(user: any) {
+  function processUser(user: IUser) {
     const jsonUser = user.toJSON()
     if(jsonUser.admin) {
       jsonUser.canSummonControlPanel = true
@@ -225,8 +255,6 @@ async (req: any, fbAccessToken, fbRefreshToken, profile: Profile | any, done) =>
     }
     return jsonUser
   }
-  
-  return done(null, processUser(user))
 }))
 
 /**
@@ -384,53 +412,34 @@ export function auth(req, res, next: () => any) {
   }
 }
 
-export function ensureAuthenticated(req: any, res: any, next: () => any) {
+export function ensureAuthenticated(req: Express.Request, res: Express.Response, next: () => any) {
   try {
-    // sidewalk.warning(`Authenticating Passport for route: ${req.route}`)
     if(req.isAuthenticated() && req.user) {
-      // sidewalk.success('Passport Authentication Successful')
-      /**
-       * @todo check if this block does anything, might be able to prune it
-       */
-      if(req.user.sms || req.user.facebookId) {
-        passportAllEnsure()
-      } else if(req.user.facebookId) {
-        passportAllEnsure()
-      } else {
-        return next()
-      }
+      passportAllEnsure()
     } else {
       throw 'Could not Authenticate Passport'
     }
 
     // This Function will check system auth
-    /**
-     * @todo Change this to modern user format
-     */
-    function passportAllEnsure() {
-      // sidewalk.warning('Ensuring Authentication...')
-      const device = req.user.devices.get(req.headers.uuid)
-      if(device) {
-        // Check if Auth Token valid
-        const expiresOn = moment(device.expiresOn)
-        const expired = expiresOn.isValid() ? expiresOn.isSameOrBefore(moment()) : true
-        if(!expired) {
-          // sidewalk.success('✓ Token Valid, User Authenticated! ✓')
-          return next()
-        } else if(device.refreshToken) {
-          if(req.headers.refreshToken) {
-            // sidewalk.success('✓ Access Token Requested, Generating... ✓')
-            return next()
-          } else {
-            // sidewalk.warning('Token Expired, Requesting Refresh Token...')
-            res.status(200).send({ accepted: false, requestRefreshToken: true})
-          }
-        } else {
-          throw 'No Refresh Token found for this device... Something is wrong'
-        }
-      } else {
-        throw `Device not found: ${req.headers.uuid || ''}`
+    function passportAllEnsure()  {
+      // Get User Device
+      let device: IUserDevice
+      req.user.devices.some((d, i,  arr) => {
+        if(d._id !== req.headers.uuid) return false
+        device = Object.assign({}, d)
+        return true
+      })
+      if(!device) throw `Device not found: ${req.headers.uuid || ''}`
+      // Check if Auth Token Expired
+      const expiresOn = moment(device.expiresOn)
+      const expired = expiresOn.isValid() ? expiresOn.isAfter(moment()) : true
+      if(!expired) return next()
+      // Check if a Refresh Token was issued to the device, this allows for non-persistent logins
+      if(device.refreshToken) {
+        if(req.headers.refreshToken) return next() // /api/refreshToken.ts
+        res.status(200).send({ accepted: false, requestRefreshToken: true})
       }
+      throw 'No Refresh Token found for this device... Something is wrong'
     }
   } catch(e) {
     // e && sidewalk.error(`ERROR: ${e}`)

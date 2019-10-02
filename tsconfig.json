@@ -4,6 +4,7 @@
       "moduleResolution": "node",
       "pretty": true,
       "sourceMap": true,
+      "allowJs": true,
       "target": "es6",
       "outDir": "./dist",
       "baseUrl": "./server",
@@ -15,13 +16,17 @@
           "Types/*": ["types/*"],
           "Schemas/*": ["schemas/*"],
           "App/*": ["*"]
-      }
+      },
+      "typeRoots": ["server/types"]
   },
   "include": [
-      "server/**/*.ts"
+      "server/**/*.ts",
+      "public/**/*.js",
+      "server/**/*.d.ts"
   ],
   "exclude": [
       "public",
+      "src",
       "node_modules"
-  ]
+  ],
 }

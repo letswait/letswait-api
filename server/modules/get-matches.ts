@@ -2,6 +2,7 @@ import { User, Match } from '../schemas'
 import moment = require('moment')
 import { IMatchModel } from 'Schemas/match'
 import sidewalk from '../library/sidewalk'
+import { IMatch } from 'Types/match';
 
 async function getMatches(req, res) {
   // Get Matches
@@ -21,6 +22,11 @@ async function getMatches(req, res) {
   }).lean()
 
   try {
+    // clean birth from userProfiles
+    for(let i = matches.length; i--;) {
+      delete matches[i].userProfiles[0].birth
+    }
+
     // Find Matches where candidates are awaiting acceptance
     const enqueuedMatches = matches.filter((match, i, arr) => {
       const userIds = Object.keys(match.users)
