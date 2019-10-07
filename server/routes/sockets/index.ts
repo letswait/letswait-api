@@ -6,6 +6,9 @@ import { IMessage, Reaction, IChat } from '../../types/match'
 import { createWheel } from '../../modules/get-wheel';
 import { IMatchModel } from '../../schemas/match';
 
+import { getFeed } from '../../modules/get-feed'
+import { IUser } from 'Schemas/user';
+
 const socketRouter = (socket: Socket) => {
   if(!socket.request.session || !socket.request.session.passport) return 
   let userId = socket.request.session.passport.user;
@@ -67,6 +70,27 @@ const socketRouter = (socket: Socket) => {
 
   })
 
+/**
+ * FEED SOCKETS
+ * @method
+ */
+socket.on('requestFeed', async (data: {
+  sexualPreference: 'men' | 'women' | 'everyone'
+  radius: number,
+  ageRange: [number, number],
+  goal: 'exclusive' | 'unsure' | 'casual' | 'serious',
+  // tags: {
+
+  // },
+}, cb: (data: IUser[]) => void) => {
+  const feed = await getFeed(userId)
+  if(feed) {
+    cb(feed)
+  } else {
+    false
+  }
+})
+
   /**
    * MATCH SOCKETS
    * @method denyMatch - Finds Match, suspends it, and removes it from both users.
@@ -76,7 +100,6 @@ const socketRouter = (socket: Socket) => {
    */
   socket.on('acceptMatch', async (matchId: mongoose.Types.ObjectId, cb: (data: {
     matchId?: mongoose.Types.ObjectId
-    accepted?: true // This Callback should only be sent back if accepted or spinner has been generated, client discerns on their end.
     preloadedDate?: 'sponsored' | 'event' | 'premiumMatch' | 'recommendation'
     preloadedSource?: string
     preloadedSpinner?: string
@@ -125,7 +148,7 @@ const socketRouter = (socket: Socket) => {
         //   res.preloadedDate =
         // }
         
-        cb({ matchId: candidate[0], accepted: true }) // send it back
+        cb({ matchId: candidate[0] }) // send it back
         
         const matchProfile = await User.findById(candidate[0], 'name birth age profile isBot botBehavior').lean()
 
@@ -137,7 +160,7 @@ const socketRouter = (socket: Socket) => {
         // Transform response objects
         const resMatch = match.toJSON()
         resMatch.userProfiles = [matchProfile]
-        cb({ match: resMatch, wheel, accepted: true })
+        cb({ match: resMatch, wheel })
         updateMatch()
       }
       function updateMatch() {
@@ -152,7 +175,7 @@ const socketRouter = (socket: Socket) => {
     }
   })
   
-  socket.on('rejectMatch', async (matchId: mongoose.Types.ObjectId) => {
+  socket.on('denyMatch', async (matchId: mongoose.Types.ObjectId) => {
     const match = await Match.findById(
       { _id: matchId, [`userProfiles.${userId}`]: { $exists: true },
     })
