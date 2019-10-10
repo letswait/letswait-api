@@ -30,10 +30,10 @@ const socketRouter = (socket: Socket) => {
     }
   })
 
-  socket.on('message', async (data: string, cb: (data: IChat) => void) => {
+  socket.on('message', async (data: any, cb: (data: string) => void) => {
     try {
       const { matchId, message, messageId }:
-        { matchId: mongoose.Types.ObjectId, message: IMessage, messageId: string } = JSON.parse(decodeURIComponent(data))
+        { matchId: mongoose.Types.ObjectId, message: IMessage, messageId: string } = _decode(data)
       const newMessage: IChat = {
         _id: messageId,
         sentTimestamp: new Date(),
@@ -42,7 +42,7 @@ const socketRouter = (socket: Socket) => {
         reactions: new Map()
       }
       // Send to all Available Clients in room, except sender
-      socket.broadcast.to(matchId.toString()).emit('messageSent', { matchId: matchId, message: newMessage })
+      socket.broadcast.to(matchId.toString()).emit('messageSent', _encode({ matchId: matchId, message: newMessage }))
       const match = await Match.findOneAndUpdate(
         { _id: matchId, userProfiles: userId },
         { $addToSet: { chat: newMessage } },
@@ -53,7 +53,7 @@ const socketRouter = (socket: Socket) => {
        *       check that recreates a random interger and tells the client how to remap it.
        */
       if(match) {
-        cb(newMessage)
+        cb(_encode(newMessage))
       } else {
         throw 'couldn\'t send chat'
       }
@@ -82,12 +82,12 @@ socket.on('requestFeed', async (data: {
   // tags: {
 
   // },
-}, cb: (data: IUser[]) => void) => {
+}, cb: (data: string | null) => void) => {
   const feed = await getFeed(userId)
   if(feed) {
-    cb(feed)
+    cb(_encode(feed))
   } else {
-    false
+    cb(null)
   }
 })
 
@@ -98,23 +98,16 @@ socket.on('requestFeed', async (data: {
    *                       Or... on Match, sends back successful match callback.
    * @method
    */
-  socket.on('acceptMatch', async (matchId: mongoose.Types.ObjectId, cb: (data: {
-    matchId?: mongoose.Types.ObjectId
-    preloadedDate?: 'sponsored' | 'event' | 'premiumMatch' | 'recommendation'
-    preloadedSource?: string
-    preloadedSpinner?: string
-
-    match?: IMatchModel
-    wheel?: any // When got spinner data, send it down. client should catch it and incorporate it into match
-  }) => void) => {
+  socket.on('acceptMatch', async (_suitorId: mongoose.Types.ObjectId, cb: (data: string) => void) => {
     try {
-      const match = await Match.findById(
-        { _id: matchId, [`userProfiles.${userId}`]: { $exists: true },
+      const suitorId = _decode(_suitorId)
+      const match = await Match.findOne({
+        [`users.${userId}`]: { $exists: true }, // Checks for exact match while allowing userProfiles to just return suitor's profile
+        [`userProfiles.${suitorId}`]: { $exists: true },
       })
       const users = Object.keys(match.users)
       let candidate;
       let user;
-      console.log('are they equal?', users[0] === userId.toString(), userId, users[0])
       if(users[0] === userId.toString()) {
         candidate = [users[1], match.users[users[1]]]
         user = [users[0], match.users[users[0]]]
@@ -140,15 +133,8 @@ socket.on('requestFeed', async (data: {
         match.state = 'queued'
         updateMatch()
       } 
-      if(candidate[1] === 'accepted') { // Its a Match!, let them know, then create a spinner to send down, push notify candidate too
-        // const res = {
-        //   accepted: true,
-        // }
-        // if(match.dates[0]) {
-        //   res.preloadedDate =
-        // }
-        
-        cb({ matchId: candidate[0] }) // send it back
+      if(candidate[1] === 'accepted') { // Its a Match!, let them know, then create a spinner to send down, push notify candidate to
+        cb(_encode({ matchId: candidate[0] })) // send back the successful matchID
         
         const matchProfile = await User.findById(candidate[0], 'name birth age profile isBot botBehavior').lean()
 
@@ -160,11 +146,11 @@ socket.on('requestFeed', async (data: {
         // Transform response objects
         const resMatch = match.toJSON()
         resMatch.userProfiles = [matchProfile]
-        cb({ match: resMatch, wheel })
+        cb(_encode({ match: resMatch, wheel }))
         updateMatch()
       }
       function updateMatch() {
-        Match.updateOne({ _id: matchId }, match, (err, raw) => {
+        Match.updateOne({ _id: match._id }, match, (err, raw) => {
           if(!err) {
             // sidewalk.success('Updated Match!')
           }
@@ -175,14 +161,17 @@ socket.on('requestFeed', async (data: {
     }
   })
   
-  socket.on('denyMatch', async (matchId: mongoose.Types.ObjectId) => {
-    const match = await Match.findById(
-      { _id: matchId, [`userProfiles.${userId}`]: { $exists: true },
+  socket.on('denyMatch', async (_suitorId: mongoose.Types.ObjectId) => {
+    const suitorId = _decode(_suitorId)
+    console.log(suitorId, userId)
+    const match = await Match.findOne({
+      [`users.${userId.toString()}`]: { $exists: true }, // Checks for exact match while allowing userProfiles to just return suitor's profile
+      userProfiles: suitorId,
     })
+    console.log('pain point? does match.users return with only one item?: ', match)
     const users = Object.keys(match.users)
     let candidate;
     let user;
-    console.log('are they equal?', users[0] === userId.toString(), userId, users[0])
     if(users[0] === userId.toString()) {
       candidate = [users[1], match.users[users[1]]]
       user = [users[0], match.users[users[0]]]
@@ -195,7 +184,7 @@ socket.on('requestFeed', async (data: {
     User.findOneAndUpdate(
       {
         _id: candidate[0],
-        [`matches.${match._id}`]: { $exists: false },
+        [`matches.${match._id.toString()}`]: { $exists: false },
       }, {
         $pull: {
           matches: match._id
@@ -207,3 +196,6 @@ socket.on('requestFeed', async (data: {
   })
 }
 export default socketRouter
+
+function _decode(data: any) { return JSON.parse(decodeURIComponent(data)) }
+function _encode(data: any) { return encodeURIComponent(JSON.stringify(data)) }

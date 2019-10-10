@@ -94,9 +94,10 @@ export async function createWheel(match: any, userId: mongoose.Types.ObjectId, m
       if (venue) {
         foundSegments++
         segments[i] = {
-          logo: venue.logo,
           label: foodCats[i],
+          ...(i === chosenSegment ? { logo: venue.logo } : null),
           ...(i === chosenSegment ? { venueId: (venue as any)._id } : null),
+          ...(i === chosenSegment ? { venueName: venue.name } : null),
           ...(i === chosenSegment ? { campaignId: (venue as any).campaigns[0]._id } : null),
           ...(i === chosenSegment ? { priceLevel: venue.priceLevel } : null),
           ...(i === chosenSegment ? { message: venue.campaigns[0].message } : null),
